@@ -6,12 +6,16 @@ The feeling we want is *Generals / Zero Hour*: three sides that do not play the 
 
 ## Goal
 
-Ship a game that **plays like** those two titles without being those two titles.
+**Multiplayer.** Same match as Generals custom games: humans on one map, up to 8, teams or FFA, no dedicated server, no accounts. Peer-to-peer / LAN.
+
+**First step:** one human vs one computer. Same rules, same sim. No netcode until that match is fun.
+
+We are not shipping a single-player game that might grow a lobby. We are building the match first, locally, so two machines can later run the same match.
+
+Also true, not the first step:
 
 - Asymmetric factions, not reskins.
 - Named commanders with strengths, holes, and unique toys (the Zero Hour idea).
-- Local skirmish vs computer first.
-- Multiplayer later, with **no dedicated server and no accounts**.
 - Original world. Original names. Original assets.
 
 We are not rebuilding the 2003 campaigns, the SAGE engine, or EA's unit roster.
@@ -28,22 +32,24 @@ A match should have these beats, in this order of importance:
 6. **The sides feel different in the first two minutes.** Aegis spends and flies. Forge floods and grinds. Veil cheaps out, hides, and scavenges. If you can swap the labels and not notice, we failed.
 7. **A late superweapon exists** and is a clock the other player can see and race.
 
-## First playable (later)
+## First playable
 
-Not this folder. When we build:
+1 human vs 1 computer.
 
-- One map.
+- One 2-slot map (`maps.two_flats`).
 - One commander (vanilla Aegis).
-- Computer opponent.
-- Economy, build, move, shoot, win by destroying the enemy command structure (or equivalent).
-- No netcode.
+- Economy, build, move, shoot, win by destroying enemy buildings.
+- No netcode. No 8-slot lobby. No other factions.
 
-## Later, still in scope
+The sim is still a *match* (slots, orders, clocks), not a special “AI mode.” Multiplayer reuses it.
 
-- The other two factions.
-- Specialist commanders (Zero Hour's "12 loadouts" idea: 3 vanilla + 9 specialists).
-- Local vs computer with a challenge ladder (a named AI commander with a pre-built base).
-- Peer-to-peer / LAN multiplayer, up to the classic 8-player custom game if the sim can take it.
+## After that (goal path)
+
+1. Two humans, same rules, peer-to-peer / LAN. No backend.
+2. More slots and maps (4 / 6 / 8, teams, FFA).
+3. Forge, Veil, specialist commanders, Challenge.
+
+Factions and the full map roster stay in the catalog so we do not design a 1v1-only engine. We do not *build* them before 1 vs computer works, and we do not finish all 12 loadouts before the first networked match.
 
 ## Out of scope
 
@@ -51,7 +57,7 @@ Not this folder. When we build:
 - Using EA names, maps, models, audio, or data files.
 - Forking the 2025 GPL source drop of *Generals / Zero Hour* as this product. That code is a study reference at most. This game is original.
 - A story campaign in the first several slices.
-- Per-unit and per-map balance sheets until the next research pass.
+- Balance numbers and product names until a later pass. Role catalog lives in `docs/catalog/`.
 
 ## Tone
 

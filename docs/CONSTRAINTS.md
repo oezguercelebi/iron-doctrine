@@ -58,15 +58,22 @@ Pick when the first playable is specified, not before. The sim (economy, build, 
 
 ## Local vs computer first
 
-Until that match is fun, we do not design netcode, a lobby UI, or a campaign.
+Until **1 vs computer** is a match you can finish and care about:
+
+- No netcode
+- No lobby UI
+- No campaign
+- No 8-player screen
+
+Keep the sim as a match (slots, orders, one clock) so multiplayer is a connection, not a rewrite.
 
 ## Content order
 
-1. Shared systems (this research).
-2. Per-unit, per-building, per-map inventory (next research).
-3. Stack + first playable.
-4. Other factions and commanders.
-5. Peer multiplayer.
+1. Shared systems (research).
+2. Catalog (`docs/catalog/`).
+3. Stack + **1 vs computer** (vanilla Aegis, one 2-slot map).
+4. **Multiplayer** on that same match (2 humans, P2P / LAN, no backend).
+5. More slots, maps, factions, commanders.
 
 ## Tone constraint
 

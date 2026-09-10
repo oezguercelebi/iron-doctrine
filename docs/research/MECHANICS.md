@@ -1,6 +1,8 @@
-# Shared mechanics
+# Shared mechanics (source)
 
-How *Generals* and *Zero Hour* actually play. Unit stats, build times, and map layouts are **out of this document**. Next pass.
+How *Generals* and *Zero Hour* actually play. Unit stats, build times, and map layouts are **out of this document**.
+
+The implementable catalog (roles + grouped systems) is [docs/catalog/](../catalog/README.md). This file stays the source narrative.
 
 ## Match
 

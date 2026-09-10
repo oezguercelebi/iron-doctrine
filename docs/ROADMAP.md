@@ -10,33 +10,34 @@ This folder is phase 0. Nothing below is scheduled.
 - Goal and constraints
 - Git repo
 
-## 1. Mechanic inventory (next)
+## 1. Mechanic inventory (done)
 
-One sheet per thing, still no app:
+Catalog: [docs/catalog/](catalog/README.md).
 
-- Every building role (command, power, supply, barracks, factory, air, tech, defense, superweapon, unique)
-- Every unit role (builder, gatherer, infantry line, armor line, artillery, air, hero, support)
-- Neutral map objects (supply dock, oil, hospital, civilian garrison, crates)
-- One starter map: spawn, docks, chokes, garrison clusters
-- What vanilla Aegis needs for a 10-minute vs-AI match
+- Systems, roles, abilities, statuses, tech tree
+- Detection, damage×armor, terrain
+- HUD, match settings, AI jobs, announcer events
+- Map grammar for 2–8 players; skirmish map roster
+- 12 loadouts as deltas
+- Slice-1 filters on each sheet
 
-Do not write balance numbers until the roles are listed.
+Numbers, product names, and drawn map geometry are still later. The map *roster* (2–8 players) is catalogued.
 
 ## 2. Stack decision
 
 One page: engine, language, 2D vs 3D, how the sim ticks. Then the first playable can start.
 
-## 3. First playable
+## 3. First playable — 1 vs computer
 
-Local vs computer. One map. Vanilla Aegis. Win by destroying the AI command structure. Proof is a match you can finish, not a menu.
+One human, one AI, one 2-slot map, vanilla Aegis. Win by destroying enemy buildings. Proof is a match you can finish, not a menu. No netcode.
 
-## 4. Faction completeness
+## 4. Multiplayer (the goal)
 
-Forge, then Veil. Then specialist commanders (the Zero Hour 3×3 grid).
+Same match, two humans. LAN / peer-to-peer. No backend. Then more slots.
 
-## 5. Multiplayer
+## 5. Rest of the roster
 
-LAN / peer-to-peer. No backend. Same rules as skirmish.
+More maps (4 / 6 / 8). Forge, Veil. Specialist commanders. Challenge.
 
 ## Explicitly later or never
 

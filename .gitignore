@@ -1,0 +1,12 @@
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.user
+node_modules/
+dist/
+build/
+target/
+.godot/
+.import/
+*.tmp

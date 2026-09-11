@@ -1,0 +1,5 @@
+**BLOCK — simulation/tests lane.**
+
+- **P2 — [src/Sim/Systems.cs:228](/var/folders/5h/r5rwjq6j77s3tvsdz7rwp33r0000gn/T/iron-review-vsmxfau6/src/Sim/Systems.cs:228): Unloading can teleport passengers beyond local reach.** The anchor is clamped, but `FindFree` searches the entire map without checking the returned distance. Source-derived example on the default terrain: Gatherer `(5150,2300)`, unload toward `(5150,0)` → infantry placement `(4650,1320)`, approximately 1100 units away despite 480-unit unload reach. This violates the accepted local-unload requirement. Transport regressions remove terrain and miss this case.
+
+Supplied raw logs show the three R2 regressions and final simulation/build passing. Final visible integrated completion remains outstanding. No tests were executed during this review.

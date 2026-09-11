@@ -1,6 +1,6 @@
 # Roadmap
 
-Phases 0–2 are complete. The accepted first playable is implemented and undergoing its final case review. Later phases are not scheduled.
+Phases 0–2 are complete. The accepted first playable is implemented and blocked in final review on two gameplay edge cases. Later phases are not scheduled.
 
 ## 0. This repo (done)
 

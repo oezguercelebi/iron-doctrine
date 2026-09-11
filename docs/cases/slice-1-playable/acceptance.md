@@ -1,6 +1,6 @@
 # Acceptance evidence
 
-Implementation, regression and visible/manual proof are complete. Final independent simulation and case review verdicts are pending. Historical failed proofs are retained as labeled intermediate evidence, not counted as current passes.
+Implementation, regression and visible/manual proof are complete. Final independent simulation and case reviews are BLOCK; the Crew patch cap requires user authorization before further repairs. Historical failed proofs are retained as labeled intermediate evidence, not counted as current passes.
 
 | Requirement | Evidence |
 | --- | --- |
@@ -31,10 +31,17 @@ Implementation, regression and visible/manual proof are complete. Final independ
 4. Original glTF validation/import: **PASS**, proof/art-import.txt and final-import.txt.
 5. Headless Godot startup: **PASS**, proof/final-headless.txt, actual final source.
 6. Visible complete local match: **PASS** on final merged source at tick2701 (02:15), victory,113public orders,15models; final-visible-match.txt and final-finished-match.png. Mouse/keyboard construction, queues/refund, control group/box selection, move/zoom, pause, resign and rematch **PASS**, manual-input.md and screenshots. Post-patch targeted client input proof also passes on final sim.
-7. Lane/scope hygiene and fresh case R: mechanical checks **PASS**; contract, art and client independently approved; final simulation/case verdicts pending.
+7. Lane/scope hygiene and fresh case R: mechanical checks **PASS**; contract, art and client lane independently approved; final simulation and case reviews **BLOCK** on local unload reach and targeted Guard. Gate7 does not pass.
 
 Crew's TypeScript example is inapplicable to the locked C# stack. No npm project was added. Full integration checks use the stack equivalents above.
 
 ## Limits
 
 These are placeholder balance values and a small original teaching map. Optional AA link is skipped. The complete-match driver sends ordinary player orders from public snapshots; it does not click each HUD command. Manual GUI proof covers the subset explicitly listed above; specialized commands also have simulation regressions and independently reviewed dispatch. Native Blender source roundtrip equivalence is not separately proved; exported glTF import and runtime consumption are proved. No network play, excluded factions, or backend is included.
+
+## Open review findings
+
+- [Simulation R2](reviews/sim-r2.md): "Unloading can teleport passengers beyond local reach." Default-map clutter can cause the free-position fallback to place infantry too far from its carrier.
+- [Final case R](reviews/case-final.md): "Guard cannot follow/protect a target." The input layer strips the selected target id and the regression expects that incorrect behavior.
+
+The complete-match victory and passing tests remain valid evidence for their executed paths; they do not close these two uncovered requirements.

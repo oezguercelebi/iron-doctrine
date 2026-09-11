@@ -1,4 +1,4 @@
-# Observations — final review pending
+# Observations — final reviews blocked
 
 - Accepted stack was available exactly: Godot4.7.2 .NET and .NET8 SDK. No engine downgrade or snapshot acceptance needed.
 - Claude reviewer access was disabled by organization settings. A fresh read-only Codex reviewer harness preserved independence and removed write tools; it received pinned source and raw proof artifacts.
@@ -10,4 +10,4 @@
 - Gameplay numbers remain intentionally provisional in one data file. Optional AA linking is skipped as accepted. Network play, other loadouts, naming and final balance remain future cases. No backend or sockets were introduced.
 - No outcome or frozen contract amendment was needed. Cases and generated import metadata were coordinated on main; implementations stayed in isolated lanes. No push has been made.
 
-All runtime/proof gates pass; final simulation and case verdicts will be recorded before ready-to-close. The user retains the close gate.
+Runtime and executable proof gates pass, but final simulation/case reviews block closure. Two uncovered cases remain: unload fallback can escape local reach, and target stripping removed unit-following Guard while a new test asserted the wrong behavior. The two-round sim patch budget is exhausted, so the case stops at idle-user for an explicit extension, not ready-to-close. The user retains the close gate.

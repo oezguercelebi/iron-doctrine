@@ -1,0 +1,6 @@
+PASS real-sim Build picked=9@WorldPoint { X = 2200, Z = 4600 } ghost=WorldPoint { X = 2300, Z = 4650 } actual=WorldPoint { X = 2300, Z = 4650 }
+PASS Build/Move/AttackMove/Guard/Waypoint/Rally/Exit discard incidental picked entity IDs
+PASS entity actions retain explicit targets; ground ForceAttack remains ground targeting
+PASS enemy garrison/Gatherer/Scout activity, passengers, cargo and XP are unknown or omitted; public rank remains
+PASS own private status, passenger count, cargo and XP remain available
+CLIENT_R2_TARGETED_PROOF_OK

@@ -73,3 +73,7 @@ Sim d935dc3 lane check passes: five src/Sim files, Program invocation and new Re
 
 ## 2026-09-12 evidence import hygiene
 Client patch2 import uncovered that Computer Use screenshot files returned JPEG bytes despite their .png filenames. Lead corrected only the six manual screenshot extensions and references to .jpg, and excluded docs/ from Godot resource import with .gdignore. No image contents or gameplay changed. Final import will verify the correction.
+
+## 2026-09-12 final client patch merged, sim second review block
+Client 5eb37db passed exact lane check, merged4842901. Main targeted input proof and Godot build pass: clicked ground point survives incidental picked entity; private enemy intel unknown; zero build warnings/errors. Fresh client-r2 R dispatched on e5f29ee.
+Sim R1 returned P1 hiddenTargetId position substitution and P2 appended Exit executes immediately / captured defense retains old owner orders. Assigned second and final sim patch round in fresh worktree. The client now strips incidental targets, but sim must independently enforce the public information and action-queue contract. Full R verdict retained; in-lane correctness, no spec amendment.

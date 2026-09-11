@@ -11,3 +11,5 @@
 - [ ] client-r1 · idle-review · lane src/Client/** · after client · Attack, producer cancellation, public combat feedback and radar gating fixes.
 
 - [ ] client-r2 · building · lane src/Client/** · after client-r1 · Preserve legal build point; distinguish unknown enemy passenger/activity fields.
+
+- [ ] sim-r2 · building · lane src/Sim/**, tests/** · after sim-r1 · Sanitize point orders, queue unload correctly, clear control on capture.

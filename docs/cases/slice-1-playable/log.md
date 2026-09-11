@@ -22,3 +22,12 @@ Added C# stack gate mapping in acceptance.md; Crew TypeScript example is inappli
 
 ## 2026-09-12 R contract — block, patch round 1
 R returned P2 tools/review_case.py:34: numbered source used working tree while diff used requested commit. Patched harness to read source with git show <head>:<path>. R also found a proof gap: frozen seam lacks pre-Step gameplay assertion. Added a supplemental proof task in the sim lane; frozen SeamConformance.cs remains unchanged and the accepted next-tick contract remains unchanged. No user decision is needed for these reversible in-scope fixes. Fresh R follows the patch. Missing-factory red accepted as appropriate at this phase.
+
+## 2026-09-12 early proof merge
+Lane check main...codex/slice1-sim returned only tests/SubmissionTiming.cs. Merged 3fb7f18 while sim implementation remains in its worktree. Supplemental next-tick/input-detachment proof added without modifying frozen test. Fresh R contract-patch spawned on merged range immediately; original missing-factory red remains expected.
+
+## 2026-09-12 art progress
+Art reports all 15 GLBs and original Blender sources generated. Source/preview import exclusions being added; correcting rocks floor bound and triangle count proof before return. Lead inspected rendered tank and gatherer previews for integration readiness; independent R still required. Catalog data id check found 15 slice roles, eight slots, and no ids absent from catalog.
+
+## 2026-09-12 R contract-patch — block, patch round 2
+R found P1 src/Bootstrap/Main.cs:16 ambiguous FileAccess under implicit System.IO; lead qualifies Godot.FileAccess (fix prepared before R return). P2 tests/Program.cs:2 did not yet invoke supplemental proof; proof gap only tested Move, not Build/debit. Sim child assigned actual invocation and Build timing checks in the supplemental file. Original frozen proof remains unchanged. Both R verdicts preserved. Fresh R waits for this concrete patch commit, no change to accepted outcome/proof semantics.

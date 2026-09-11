@@ -13,7 +13,7 @@ public partial class Main : Node3D
     {
         try
         {
-            var config = GameConfig.FromJson(FileAccess.GetFileAsString("res://data/slice1.placeholders.json"));
+            var config = GameConfig.FromJson(Godot.FileAccess.GetFileAsString("res://data/slice1.placeholders.json"));
             IMatch CreateMatch() => new MatchFactory().Create(config, config.CreateSetup());
             var client = new MatchClient();
             client.Initialize(CreateMatch(), CreateMatch);

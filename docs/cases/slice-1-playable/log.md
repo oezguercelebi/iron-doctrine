@@ -43,3 +43,9 @@ Fresh R contract-final APPROVE at pre-implementation gate: source pinning, FileA
 
 ## 2026-09-12 client build progress
 Client reports pinned Godot.NET.Sdk/4.7.2 build with zero warnings/errors. Public-order proof pilot supports --proof-play, --proof-output=<path>, --proof-quit and uniform --proof-speed=N; no sim-internal mutation. Actual integrated match remains pending. Lead launch wrappers pass shell syntax and reviewer harness parses; git diff --check clean.
+
+## 2026-09-12 client merge and R
+Client 3f79a50 passed lane check (7 paths src/Client/** and scenes/**). Merged on main; fresh R client dispatched with raw standalone compile proof and exact contracts/data/root context. Lead synchronized disposable smoke fixture to merged client source and rebuilt: zero warnings/errors. Repeating its startup from main cwd hit Godot C# script-path/class discovery for the disposable Main, so this repeat is not counted as a runtime pass; child diagnosing fixture commands. Its earlier screenshot is visual context only, not final integrated-match evidence. Sim source still in worktree completing full paired matches.
+
+## 2026-09-12 standalone fixture resolved; match progress
+Client child confirmed Godot script-path generation was sensitive to /tmp versus canonical /private/tmp plus build cwd. Rebuilt from inside fixture, then headless and visible boots both exit0: CLIENT_READY slot=0 entities=19 models=15, CLIENT_SMOKE_BOOT_OK. Raw corrected logs copied to proof/client-build.txt and client-smoke-{headless,visible}.txt; initial error retained separately. No product patch needed; root run wrapper already changes to project root before build. Sim complete default match reached actual defeat near tick1900 with identical paired replay; proof caught occupied-destination pathfinding and AI composition cursor bugs, now corrected and rerunning before merge.

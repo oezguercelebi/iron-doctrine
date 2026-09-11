@@ -101,27 +101,32 @@ internal sealed partial class Match
         body.PathEnd = end == start ? body.Pos : Point(end);
         for (var cursor = end; cursor != start; cursor = parent[cursor]) body.Path.Add(Point(cursor));
         body.Path.Reverse();
-        if (range == 0 && GroundFits(target, Role(body).Radius, body.Id)) body.Path.Add(target);
+        if (!body.PathFallback && GroundFits(target, Role(body).Radius, body.Id)) body.Path.Add(target);
     }
     private static readonly WorldPoint[] Directions = { new(1, 0), new(0, 1), new(-1, 0), new(0, -1), new(1, 1), new(-1, 1), new(-1, -1), new(1, -1) };
-    private bool MoveToward(Body body, WorldPoint target, int range)
+    private enum TravelResult { Moving, Arrived, Blocked }
+    private TravelResult MoveToward(Body body, WorldPoint target, int range)
     {
         body.Destination = target;
-        if (Near(body.Pos, target, range)) return true;
+        if (Near(body.Pos, target, range)) return TravelResult.Arrived;
         var r = Role(body);
-        if (r.SpeedPerTick <= 0) return false;
+        if (r.SpeedPerTick <= 0) return TravelResult.Blocked;
         WorldPoint next;
         if (r.IsFlying) next = Toward(body.Pos, target, r.SpeedPerTick);
         else
         {
-            if (body.PathWait > 0) { body.PathWait--; return false; }
+            if (body.PathWait > 0) { body.PathWait--; return TravelResult.Moving; }
             if (body.Path.Count == 0 || body.PathTopology != topology || !Near(body.PathGoal, target, C.Map.CellSize) || body.PathRange != range)
             {
                 // Direct movement is a fast path for a genuinely clear segment.
                 if (range == 0 && SegmentClear(body, target)) { body.PathFallback = false; body.Path.Clear(); body.Path.Add(target); body.PathGoal = target; body.PathTopology = topology; body.PathRange = range; }
                 else PlanPath(body, target, range);
             }
-            if (body.Path.Count == 0) return body.PathFallback || Near(body.Pos, target, Math.Max(range, C.Map.CellSize));
+            if (body.Path.Count == 0)
+            {
+                body.PathWait = C.Rules.PathReplanTicks;
+                return Near(body.Pos, target, range) ? TravelResult.Arrived : TravelResult.Blocked;
+            }
             next = Toward(body.Pos, body.Path[0], r.SpeedPerTick);
             if (!GroundFits(next, r.Radius, body.Id, true, body))
             {
@@ -133,7 +138,7 @@ internal sealed partial class Match
                     if (GroundFits(alternative, r.Radius, body.Id, true, body) && Distance2(alternative, target) <= Distance2(body.Pos, target) + (long)C.Map.CellSize * C.Map.CellSize)
                     { next = alternative; found = true; break; }
                 }
-                if (!found) { body.Path.Clear(); body.PathWait = C.Rules.PathReplanTicks; return false; }
+                if (!found) { body.Path.Clear(); body.PathWait = C.Rules.PathReplanTicks; return TravelResult.Moving; }
             }
             if (next == body.Path[0]) body.Path.RemoveAt(0);
         }
@@ -141,7 +146,20 @@ internal sealed partial class Match
         foreach (var passenger in body.Occupants) if (Bodies.TryGetValue(passenger, out var infant)) infant.Pos = next;
         if (body.RoleId == "armor.basic" && previous != next)
             foreach (var victim in Bodies.Values.Where(b => b.Id != body.Id && Role(b).IsInfantry && b.ContainerId == 0 && Near(next, b.Pos, C.Rules.CrushRadius + Role(b).Radius)).ToArray()) Hit(victim, victim.Hp, body);
-        return Near(body.Pos, target, range) || body.PathFallback && body.Path.Count == 0 && Near(body.Pos, body.PathEnd, Role(body).Radius);
+        if (Near(body.Pos, target, range)) return TravelResult.Arrived;
+        return body.PathFallback && body.Path.Count == 0 && Near(body.Pos, body.PathEnd, Role(body).Radius) ? TravelResult.Blocked : TravelResult.Moving;
+    }
+    private bool ClearConstructionFootprint(Body builder, WorldPoint site, int radius)
+    {
+        int clearance = radius + Role(builder).Radius;
+        if (!Near(builder.Pos, site, clearance)) return true;
+        int offset = clearance + C.Map.CellSize;
+        var access = Directions.Select(d => new WorldPoint(site.X + d.X * offset, site.Z + d.Z * offset))
+            .Where(p => Near(p, site, clearance + C.Rules.InteractionRange) && GroundFits(p, Role(builder).Radius, builder.Id, true) && SegmentClear(builder, p))
+            .OrderBy(p => Distance2(builder.Pos, p)).ThenBy(p => p.X).ThenBy(p => p.Z).Cast<WorldPoint?>().FirstOrDefault();
+        if (access == null) { FinishAction(builder); return false; }
+        MoveToward(builder, access.Value, 0);
+        return !Near(builder.Pos, site, clearance);
     }
     private WorldPoint? FindFree(WorldPoint requested, RoleConfig role, int ignore = 0)
     {

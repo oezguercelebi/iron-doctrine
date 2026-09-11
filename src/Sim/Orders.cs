@@ -62,7 +62,7 @@ internal sealed partial class Match
                 if (!player.Upgrades.Contains("up.capture") || actors.Any(b => b.RoleId != "inf.rifle")) return "Capture research required.";
                 return known && Enemy(order.Slot, target!.Owner) && Role(target).IsBuilding && !Role(target).IsNeutral && target.Complete ? "" : "Choose a visible enemy building.";
             case OrderKind.Gather:
-                return actors.All(b => b.RoleId == "eco.chinook" && b.Occupants.Count == 0) && known && target!.RoleId == "map.dock" && target.Supplies > 0 ? "" : "Choose an available supply dock.";
+                return actors.All(b => b.RoleId == "eco.chinook" && b.Occupants.Count == 0) && known && target!.RoleId == "map.dock" && (target.Supplies > 0 || actors.All(b => b.Cargo > 0)) ? "" : "Choose an available supply dock.";
             case OrderKind.Enter:
                 if (!known || !target!.Complete || Role(target).Capacity <= 0 || target.Owner != order.Slot && !(target.Owner == -1 && target.RoleId == "map.garrison")) return "Choose your transport or an empty garrison.";
                 if (target.RoleId == "eco.chinook" && target.Cargo > 0) return "Unload supplies first.";
@@ -77,6 +77,7 @@ internal sealed partial class Match
                 if (actors.Any(b => Role(b).Damage <= 0)) return "Select combat units.";
                 goto case OrderKind.Move;
             case OrderKind.Stop:
+                return actors.All(b => Role(b).SpeedPerTick > 0 || Role(b).IsBuilding && Role(b).Damage > 0) ? "" : "Select units or defenses.";
             case OrderKind.Waypoint:
             case OrderKind.Move:
                 return actors.All(b => Role(b).SpeedPerTick > 0) ? "" : "Select mobile units.";

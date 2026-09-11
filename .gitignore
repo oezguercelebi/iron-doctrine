@@ -10,3 +10,9 @@ target/
 .godot/
 .import/
 *.tmp
+
+# Local toolchains and isolated lanes
+.tools/
+.worktrees/
+**/bin/
+**/obj/

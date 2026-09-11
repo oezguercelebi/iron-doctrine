@@ -49,7 +49,7 @@ internal sealed partial class Match
             unit.Actions[0] = action with { Position = target.Pos };
             Engage(unit, target);
         }
-        else if (MoveToward(unit, action.Position, C.Rules.InteractionRange)) FinishAction(unit);
+        else if (MoveToward(unit, action.Position, C.Rules.InteractionRange) != TravelResult.Moving) FinishAction(unit);
     }
     private void Fire(Body attacker, Body victim, WorldPoint origin)
     {

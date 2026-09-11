@@ -102,7 +102,7 @@ internal sealed partial class Match : IMatch
     private void CheckOutcome()
     {
         foreach (var player in Players.Values)
-            if (!player.Eliminated && !Bodies.Values.Any(b => b.Owner == player.Slot && Role(b).IsBuilding && !Role(b).IsNeutral)) { player.Eliminated = true; Event("vo.defeat", player.Slot); }
+            if (!player.Eliminated && !Bodies.Values.Any(b => b.Owner == player.Slot && Role(b).IsBuilding)) { player.Eliminated = true; Event("vo.defeat", player.Slot); }
         var survivors = Players.Values.Where(p => !p.Eliminated).Select(p => p.Slot).ToArray();
         if (survivors.Length == 0 || survivors.All(a => survivors.All(b => Allied(a, b))))
         {

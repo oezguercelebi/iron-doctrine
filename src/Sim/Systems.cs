@@ -20,7 +20,11 @@ internal sealed partial class Match
         if (Role(body).IsBuilding)
         {
             StepProduction(body);
-            if (body.Powered) AutoFire(body, body.Pos);
+            if (body.Powered)
+            {
+                if (body.Actions.Count > 0 && body.Actions[0].Kind is OrderKind.Attack or OrderKind.ForceAttack) AttackAction(body, body.Actions[0]);
+                else AutoFire(body, body.Pos);
+            }
             if (body.RoleId == "prod.factory" && body.Powered)
                 foreach (var vehicle in Bodies.Values.Where(b => b.Owner == body.Owner && b.ContainerId == 0 && !Role(b).IsBuilding && !Role(b).IsFlying && !Role(b).IsInfantry && Near(body.Pos, b.Pos, C.Rules.FactoryRepairRange + Role(body).Radius)))
                     vehicle.Hp = Math.Min(MaxHp(vehicle), vehicle.Hp + C.Rules.FactoryRepairHpPerTick);
@@ -29,7 +33,7 @@ internal sealed partial class Match
         if (body.Actions.Count == 0)
         {
             body.Activity = EntityActivity.Idle;
-            if (body.RoleId == "eco.chinook" && body.Occupants.Count == 0 && body.AutoGather) Gather(body);
+            if (body.RoleId == "eco.chinook" && body.Occupants.Count == 0 && (body.AutoGather || body.Cargo > 0 && InDeliveryRange(body))) Gather(body);
             else AutoFire(body, body.Pos);
             return;
         }
@@ -39,7 +43,7 @@ internal sealed partial class Match
             case OrderKind.Move:
             case OrderKind.Waypoint:
                 body.Activity = EntityActivity.Moving;
-                if (MoveToward(body, action.Position, Role(body).Radius)) FinishAction(body);
+                if (MoveToward(body, action.Position, Role(body).Radius) != TravelResult.Moving) FinishAction(body);
                 break;
             case OrderKind.Attack:
             case OrderKind.ForceAttack: AttackAction(body, action); break;
@@ -51,7 +55,7 @@ internal sealed partial class Match
                 else
                 {
                     body.Activity = EntityActivity.Moving;
-                    if (MoveToward(body, guardPos, action.Kind == OrderKind.Guard ? C.Rules.InteractionRange : Role(body).Radius) && action.Kind != OrderKind.Guard) FinishAction(body);
+                    if (MoveToward(body, guardPos, action.Kind == OrderKind.Guard ? C.Rules.InteractionRange : Role(body).Radius) != TravelResult.Moving && action.Kind != OrderKind.Guard) FinishAction(body);
                 }
                 break;
             case OrderKind.Build: Build(body, action); break;
@@ -80,9 +84,10 @@ internal sealed partial class Match
         builder.Destination = action.Position; builder.Activity = EntityActivity.Building;
         if (builder.ConstructionId == 0)
         {
-            if (!MoveToward(builder, action.Position, role.Radius + Role(builder).Radius + C.Rules.InteractionRange)) return;
-            // Revalidate full world only on arrival, after the builder's approach has supplied LOS.
-            if (!HasPrerequisites(builder.Owner, role) || Players[builder.Owner].Money < role.Cost || !GroundFits(action.Position, role.Radius, builder.Id, true) || Bodies.Count >= C.Rules.HardEntityCap)
+            if (MoveToward(builder, action.Position, role.Radius + Role(builder).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) return;
+            if (!ClearConstructionFootprint(builder, action.Position, role.Radius)) return;
+            // Revalidate full world only on arrival, after the builder has cleared its footprint.
+            if (!HasPrerequisites(builder.Owner, role) || Players[builder.Owner].Money < role.Cost || !GroundFits(action.Position, role.Radius, units: true) || Bodies.Count >= C.Rules.HardEntityCap)
             { if (Players[builder.Owner].Money < role.Cost) Event("vo.funds", builder.Owner, builder); FinishAction(builder); return; }
             Players[builder.Owner].Money -= role.Cost;
             var site = Spawn(role.Id, builder.Owner, action.Position, false); site.Hp = 1; site.BuilderId = builder.Id;
@@ -138,6 +143,7 @@ internal sealed partial class Match
         return Bodies.Values.Where(b => b.RoleId == "map.dock" && (Visible(gatherer.Owner, b.Pos) ? b.Supplies > 0 : p.Memory.TryGetValue(b.Id, out var remembered) && remembered.SuppliesLeft > 0))
             .OrderBy(b => Distance2(gatherer.Pos, b.Pos)).ThenBy(b => b.Id).FirstOrDefault();
     }
+    private bool InDeliveryRange(Body unit) => Bodies.Values.Any(b => b.Owner == unit.Owner && b.RoleId == "eco.dropoff" && b.Complete && Near(unit.Pos, b.Pos, Role(b).Radius + C.Rules.InteractionRange));
     private void Gather(Body unit)
     {
         if (unit.Occupants.Count != 0) return;
@@ -147,7 +153,7 @@ internal sealed partial class Match
             var dropoff = Bodies.Values.Where(b => b.Owner == unit.Owner && b.RoleId == "eco.dropoff" && b.Complete).OrderBy(b => Distance2(unit.Pos, b.Pos)).ThenBy(b => b.Id).FirstOrDefault();
             if (dropoff == null) { unit.Activity = EntityActivity.Waiting; return; }
             unit.TargetId = dropoff.Id; unit.Activity = EntityActivity.Returning;
-            if (!MoveToward(unit, dropoff.Pos, Role(dropoff).Radius + C.Rules.InteractionRange)) { unit.Timer = 0; return; }
+            if (MoveToward(unit, dropoff.Pos, Role(dropoff).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) { unit.Timer = 0; return; }
             if (++unit.Timer < C.Rules.GatherUnloadTicks) return;
             Players[unit.Owner].Money += unit.Cargo; unit.Cargo = 0; unit.Timer = 0; unit.TargetId = 0;
             return;
@@ -158,7 +164,7 @@ internal sealed partial class Match
         unit.GatherDockId = dock.Id;
         if (unit.Actions.Count > 0 && unit.Actions[0].Kind == OrderKind.Gather) unit.Actions[0] = unit.Actions[0] with { TargetId = dock.Id };
         unit.TargetId = dock.Id; unit.Activity = EntityActivity.Gathering;
-        if (!MoveToward(unit, dock.Pos, Role(dock).Radius + C.Rules.InteractionRange)) { unit.Timer = 0; return; }
+        if (MoveToward(unit, dock.Pos, Role(dock).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) { unit.Timer = 0; return; }
         if (dock.Supplies <= 0) { ReleaseDock(unit); unit.GatherDockId = 0; unit.Timer = 0; return; }
         if (dock.LoadingId != 0 && dock.LoadingId != unit.Id) { unit.Activity = EntityActivity.Waiting; return; }
         dock.LoadingId = unit.Id; unit.Activity = EntityActivity.Loading;
@@ -169,7 +175,7 @@ internal sealed partial class Match
     {
         if (!Bodies.TryGetValue(action.TargetId, out var building) || !Allied(builder.Owner, building.Owner) || !building.Complete) { FinishAction(builder); return; }
         builder.TargetId = building.Id; builder.Activity = EntityActivity.Repairing;
-        if (!MoveToward(builder, building.Pos, Role(building).Radius + C.Rules.InteractionRange)) return;
+        if (MoveToward(builder, building.Pos, Role(building).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) return;
         int hp = Math.Min(C.Rules.RepairHpPerTick, MaxHp(building) - building.Hp);
         if (C.Rules.RepairCostPerHp > 0) hp = Math.Min(hp, Players[builder.Owner].Money / C.Rules.RepairCostPerHp);
         building.Hp += hp; Players[builder.Owner].Money -= hp * C.Rules.RepairCostPerHp;
@@ -179,7 +185,7 @@ internal sealed partial class Match
     {
         if (!Bodies.TryGetValue(action.TargetId, out var building) || !Enemy(rifle.Owner, building.Owner) || !building.Complete || !Visible(rifle.Owner, building.Pos)) { FinishAction(rifle); return; }
         rifle.TargetId = building.Id; rifle.Activity = EntityActivity.Capturing;
-        if (!MoveToward(rifle, building.Pos, Role(building).Radius + C.Rules.InteractionRange)) { rifle.CaptureLeft = 0; return; }
+        if (MoveToward(rifle, building.Pos, Role(building).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) { rifle.CaptureLeft = 0; return; }
         if (rifle.CaptureLeft == 0) rifle.CaptureLeft = C.Rules.CaptureTicks;
         if (--rifle.CaptureLeft > 0) return;
         RefundQueue(building);
@@ -192,7 +198,7 @@ internal sealed partial class Match
         if (!Bodies.TryGetValue(action.TargetId, out var container) || !container.Complete || container.Owner != infantry.Owner && !(container.Owner == -1 && container.RoleId == "map.garrison") || container.Occupants.Count >= Role(container).Capacity || container.RoleId == "eco.chinook" && container.Cargo > 0)
         { FinishAction(infantry); return; }
         infantry.TargetId = container.Id; infantry.Activity = EntityActivity.Moving;
-        if (!MoveToward(infantry, container.Pos, Role(container).Radius + C.Rules.InteractionRange)) return;
+        if (MoveToward(infantry, container.Pos, Role(container).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) return;
         if (container.RoleId == "eco.chinook") Abort(container);
         container.Owner = infantry.Owner; container.Occupants.Add(infantry.Id); infantry.ContainerId = container.Id; infantry.Pos = container.Pos;
         FinishAction(infantry); infantry.Activity = EntityActivity.Contained;

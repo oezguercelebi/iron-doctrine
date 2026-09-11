@@ -77,3 +77,6 @@ Client patch2 import uncovered that Computer Use screenshot files returned JPEG 
 ## 2026-09-12 final client patch merged, sim second review block
 Client 5eb37db passed exact lane check, merged4842901. Main targeted input proof and Godot build pass: clicked ground point survives incidental picked entity; private enemy intel unknown; zero build warnings/errors. Fresh client-r2 R dispatched on e5f29ee.
 Sim R1 returned P1 hiddenTargetId position substitution and P2 appended Exit executes immediately / captured defense retains old owner orders. Assigned second and final sim patch round in fresh worktree. The client now strips incidental targets, but sim must independently enforce the public information and action-queue contract. Full R verdict retained; in-lane correctness, no spec amendment.
+
+## 2026-09-12 client approved
+Fresh client-r2 R APPROVE: both R2 findings resolved, raw targeted checks and main build pass. It correctly notes post-R2 visible match remains integration work and manual dispatch covers only the recorded subset. Main post-R2 import and headless startup already pass without errors; final visible completion follows sim patch2.

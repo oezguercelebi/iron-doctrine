@@ -39,6 +39,7 @@ public partial class Battlefield : Node3D
         public MeshInstance3D Ring = null!;
         public EntitySnapshot State = new();
         public Vector3 Desired;
+        public Vector3 ObservedHeading;
         public int Team = int.MinValue;
         public bool Remembered;
         public long LastShot;
@@ -230,13 +231,23 @@ public partial class Battlefield : Node3D
                 view.Team = entity.OwnerSlot;
                 view.Remembered = entity.IsRemembered;
             }
-            if (view.State.Hp > entity.Hp) Pulse(ToWorld(entity.Position) + Vector3.Up, new Color("ffb95e"), .5f);
+            // A pair of currently visible public observations is sufficient for movement and damage feedback.
+            // Never infer a shot's source/target from proximity, nor use private enemy orders to orient models.
+            if (!entity.IsRemembered && !view.State.IsRemembered)
+            {
+                var movement = ToWorld(entity.Position) - ToWorld(view.State.Position);
+                if (movement.LengthSquared() > .0001f) view.ObservedHeading = movement.Normalized();
+                if (view.State.Hp > entity.Hp) Pulse(ToWorld(entity.Position) + Vector3.Up, new Color("ffb95e"), .5f);
+                if (entity.OwnerSlot != snapshot.ViewerSlot && entity.Activity == EntityActivity.Attacking && view.State.Activity != EntityActivity.Attacking)
+                    Pulse(ToWorld(entity.Position) + Vector3.Up, new Color("ffeeb5"), .3f);
+            }
             view.State = entity;
             view.Desired = ToWorld(entity.Position) + Vector3.Up * (role.IsFlying ? 3.1f : 0);
             view.Ring.Visible = selection.Contains(entity.Id);
             view.Ring.Position = new Vector3(0, role.IsFlying ? -3.04f : .05f, 0);
             view.Model.Scale = entity.Completed ? Vector3.One : new Vector3(1, Mathf.Lerp(.12f, 1, 1 - (float)entity.BuildTicksLeft / Math.Max(1, entity.BuildTicksTotal)), 1);
-            if (entity.Activity == EntityActivity.Attacking && snapshot.Tick - view.LastShot >= Math.Max(1, role.AttackCooldownTicks))
+            // Only our own snapshot contains a current order target. Enemy combat is shown by public impacts above.
+            if (entity.OwnerSlot == snapshot.ViewerSlot && entity.Activity == EntityActivity.Attacking && snapshot.Tick - view.LastShot >= Math.Max(1, role.AttackCooldownTicks))
             {
                 var target = snapshot.Entities.FirstOrDefault(e => e.Id == entity.TargetId && !e.IsRemembered);
                 if (target != null && role.DeliveryId == "del.instant")
@@ -347,11 +358,16 @@ public partial class Battlefield : Node3D
             var role = _config.Role(view.State.RoleId);
             if (!role.IsBuilding)
             {
-                Vector3 direction = ToWorld(view.State.Destination) - view.Desired;
-                var target = _snapshot.Entities.FirstOrDefault(e => e.Id == view.State.TargetId);
-                if (target != null && view.State.Activity == EntityActivity.Attacking) direction = ToWorld(target.Position) - view.Desired;
+                Vector3 direction = view.ObservedHeading;
+                if (view.State.OwnerSlot == _snapshot.ViewerSlot)
+                {
+                    direction = ToWorld(view.State.Destination) - view.Desired;
+                    var target = _snapshot.Entities.FirstOrDefault(e => e.Id == view.State.TargetId);
+                    if (target != null && view.State.Activity == EntityActivity.Attacking) direction = ToWorld(target.Position) - view.Desired;
+                    if (view.State.Activity == EntityActivity.Idle) direction = view.ObservedHeading;
+                }
                 direction.Y = 0;
-                if (direction.LengthSquared() > .15f && view.State.Activity != EntityActivity.Idle)
+                if (direction.LengthSquared() > .15f)
                 {
                     float angle = Mathf.Atan2(-direction.X, -direction.Z);
                     view.Model.Rotation = new Vector3(0, Mathf.LerpAngle(view.Model.Rotation.Y, angle, Math.Min(1, (float)delta * 9)), 0);

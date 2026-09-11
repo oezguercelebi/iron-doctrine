@@ -234,11 +234,11 @@ public partial class MatchClient : Node3D
             }
             return;
         }
-        string? action = code switch { Key.Q => "attackmove", Key.X => "stop", Key.G => "guard", Key.T => "waypoint", Key.F => "force", Key.R => "repair", Key.E => "enter", Key.C => "capture", Key.V => "exit", Key.Y => "rally", Key.Delete => "sell", Key.Tab => "builder", Key.Space => "focus", _ => null };
+        string? action = code switch { Key.Z => "attack", Key.Q => "attackmove", Key.X => "stop", Key.G => "guard", Key.T => "waypoint", Key.F => "force", Key.R => "repair", Key.E => "enter", Key.C => "capture", Key.V => "exit", Key.Y => "rally", Key.Delete => "sell", Key.Tab => "builder", Key.Space => "focus", _ => null };
         if (action != null) HandleCommand(action, "", 0);
     }
 
-    private int[] OwnedSelection() => _selection.Where(id => _snapshot.Entities.Any(e => e.Id == id && e.OwnerSlot == _slot)).OrderBy(id => id).ToArray();
+    private int[] OwnedSelection() => SelectionState.Ordered(_snapshot, _selection).Where(e => e.OwnerSlot == _slot).Select(e => e.Id).ToArray();
     private void Select(EntitySnapshot? entity, bool append)
     {
         if (!append) _selection.Clear();
@@ -272,7 +272,7 @@ public partial class MatchClient : Node3D
             if (target.RoleId == "map.dock" && actors.All(e => config.Role(e.RoleId).AbilityIds.Contains("ab.gather"))) kind = OrderKind.Gather;
             else if (allied && role.IsBuilding && target.Hp < target.MaxHp && actors.All(e => config.Role(e.RoleId).AbilityIds.Contains("ab.repair"))) kind = OrderKind.Repair;
             else if ((target.OwnerSlot == _slot || target.RoleId == "map.garrison" && target.OwnerSlot < 0) && role.Capacity > 0 && actors.All(e => config.Role(e.RoleId).IsInfantry)) kind = OrderKind.Enter;
-            else if (target.OwnerSlot >= 0 && !allied && role.IsBuilding && actors.All(e => config.Role(e.RoleId).AbilityIds.Contains("ab.capture")) && _snapshot.Player.Upgrades.Contains("up.capture")) kind = OrderKind.Capture;
+            else if (CanCapture(target, actors)) kind = OrderKind.Capture;
             else if (target.OwnerSlot >= 0 && !allied) kind = OrderKind.Attack;
         }
         Submit(kind, actors.Select(e => e.Id).ToArray(), target?.Id ?? 0, point, append: append);
@@ -286,13 +286,21 @@ public partial class MatchClient : Node3D
         return ourSlot.Team > 0 && _match.Setup.Slots.Any(s => s.Index == owner && s.Team == ourSlot.Team);
     }
 
+    private bool CanCapture(EntitySnapshot target, EntitySnapshot[] actors)
+    {
+        var role = _match.Config.Role(target.RoleId);
+        return !target.IsRemembered && target.OwnerSlot >= 0 && !Allied(target.OwnerSlot) && role.IsBuilding && !role.IsNeutral
+            && actors.Length > 0 && actors.All(e => e.OwnerSlot == _slot && _match.Config.Role(e.RoleId).AbilityIds.Contains("ab.capture"))
+            && _snapshot.Player.Upgrades.Contains("up.capture");
+    }
+
     private void HandleMapClick(WorldPoint point, bool right)
     {
         if (right) ContextOrder(null, point, Input.IsPhysicalKeyPressed(Key.Shift));
         else _field.SetFocus(point);
     }
 
-    private void HandleCommand(string action, string product, int index)
+    private void HandleCommand(string action, string product, int index, int actorId = 0)
     {
         _audio.Notify("sfx.click");
         if (action == "quit") { GetTree().Quit(); return; }
@@ -334,11 +342,17 @@ public partial class MatchClient : Node3D
         }
         var actors = OwnedSelection();
         if (actors.Length == 0) { Notify("Select your units first."); return; }
-        if (action == "queue") { Submit(OrderKind.Queue, new[] { actors[0] }, product: product); return; }
-        if (action == "cancel") { Submit(OrderKind.CancelQueue, new[] { actors[0] }, queueIndex: index); return; }
+        if (action is "queue" or "cancel")
+        {
+            // Bind the button to the producer whose queue was drawn, even if the selection changes before the click.
+            var producer = _snapshot.Entities.FirstOrDefault(e => e.Id == actorId && e.OwnerSlot == _slot);
+            if (producer == null || action == "cancel" && (index < 0 || index >= producer.Queue.Length)) { Notify("That production queue is no longer available."); return; }
+            Submit(action == "queue" ? OrderKind.Queue : OrderKind.CancelQueue, new[] { producer.Id }, product: product, queueIndex: index);
+            return;
+        }
         if (action == "stop") { Submit(OrderKind.Stop, actors); ClearMode(); return; }
         if (action == "sell") { Submit(OrderKind.Sell, actors); ClearMode(); return; }
-        _mode = action switch { "move" => OrderKind.Move, "attackmove" => OrderKind.AttackMove, "guard" => OrderKind.Guard, "waypoint" => OrderKind.Waypoint, "force" => OrderKind.ForceAttack, "repair" => OrderKind.Repair, "gather" => OrderKind.Gather, "enter" => OrderKind.Enter, "capture" => OrderKind.Capture, "exit" => OrderKind.Exit, "rally" => OrderKind.Rally, "build" => OrderKind.Build, _ => null };
+        _mode = action switch { "move" => OrderKind.Move, "attack" => OrderKind.Attack, "attackmove" => OrderKind.AttackMove, "guard" => OrderKind.Guard, "waypoint" => OrderKind.Waypoint, "force" => OrderKind.ForceAttack, "repair" => OrderKind.Repair, "gather" => OrderKind.Gather, "enter" => OrderKind.Enter, "capture" => OrderKind.Capture, "exit" => OrderKind.Exit, "rally" => OrderKind.Rally, "build" => OrderKind.Build, _ => null };
         _buildRole = action == "build" ? product : "";
         _hud.ModeText = action == "build" ? "PLACE  /  " + _match.Config.Role(product).Label.ToUpperInvariant() : _mode switch { OrderKind.AttackMove => "ATTACK-MOVE", OrderKind.ForceAttack => "FORCE FIRE — ALLIES CAN BE HIT", OrderKind.Waypoint => "APPEND WAYPOINT", _ => _mode?.ToString().ToUpperInvariant() ?? "" };
         _hud.PlacementText = "";
@@ -348,6 +362,12 @@ public partial class MatchClient : Node3D
     {
         if (_mode == null) return;
         var actors = OwnedSelection();
+        if (_mode == OrderKind.Capture && (target == null || !CanCapture(target, _snapshot.Entities.Where(e => actors.Contains(e.Id)).ToArray())))
+        {
+            Notify("Capture requires researched Rifle units and a visible enemy building. Garrisons must be attacked.");
+            _audio.Notify("sfx.invalid");
+            return;
+        }
         if (_mode == OrderKind.Build)
         {
             if (actors.Length == 0) return;

@@ -1,0 +1,66 @@
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node dozer_body
+00:15:57 | INFO: glTF import finished in 0.03s
+PASS dozer: 16072 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node gatherer_body
+00:15:57 | INFO: Blender create Mesh node gatherer_rotor_left
+00:15:57 | INFO: Blender create Mesh node gatherer_rotor_right
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS gatherer: 7616 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node fusion_body
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS fusion: 6348 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node command_body
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS command: 5604 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node barracks_body
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS barracks: 4381 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node factory_body
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS factory: 4944 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node dropoff_body
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS dropoff: 5408 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node rifle_body
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS rifle: 4172 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node rocket_body
+00:15:57 | INFO: glTF import finished in 0.01s
+PASS rocket: 4600 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node tank_body
+00:15:57 | INFO: glTF import finished in 0.03s
+PASS tank: 15868 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:57 | INFO: Data are loaded, start creating Blender stuff
+00:15:57 | INFO: Blender create Mesh node scout_body
+00:15:58 | INFO: glTF import finished in 0.01s
+PASS scout: 5940 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:58 | INFO: Data are loaded, start creating Blender stuff
+00:15:58 | INFO: Blender create Mesh node aa_turret_body
+00:15:58 | INFO: glTF import finished in 0.01s
+PASS aa_turret: 3296 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:58 | INFO: Data are loaded, start creating Blender stuff
+00:15:58 | INFO: Blender create Mesh node dock_body
+00:15:58 | INFO: glTF import finished in 0.01s
+PASS dock: 8360 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:58 | INFO: Data are loaded, start creating Blender stuff
+00:15:58 | INFO: Blender create Mesh node garrison_body
+00:15:58 | INFO: glTF import finished in 0.01s
+PASS garrison: 5896 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+00:15:58 | INFO: Data are loaded, start creating Blender stuff
+00:15:58 | INFO: Blender create Mesh node rocks_body
+00:15:58 | INFO: glTF import finished in 0.00s
+PASS rocks: 2280 triangles; glTF structure, materials, normals, indices; Blender import and bounds
+PASS 15 original assets; 100785 triangles; 15/15 Blender imports
+Blender 4.5.13 LTS (hash daeeeca98fb0 built 2026-08-25 01:30:50)
+
+Blender quit

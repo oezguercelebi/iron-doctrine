@@ -31,3 +31,9 @@ Art reports all 15 GLBs and original Blender sources generated. Source/preview i
 
 ## 2026-09-12 R contract-patch — block, patch round 2
 R found P1 src/Bootstrap/Main.cs:16 ambiguous FileAccess under implicit System.IO; lead qualifies Godot.FileAccess (fix prepared before R return). P2 tests/Program.cs:2 did not yet invoke supplemental proof; proof gap only tested Move, not Build/debit. Sim child assigned actual invocation and Build timing checks in the supplemental file. Original frozen proof remains unchanged. Both R verdicts preserved. Fresh R waits for this concrete patch commit, no change to accepted outcome/proof semantics.
+
+## 2026-09-12 art merge and R
+Art b110c4a passed lane check: 53 paths, assets/** and tools/art/** only. Merged on main; reran full Blender verification on main: 15/15 original GLBs imported, normals/materials/indices/floor/bounds pass, 100785 total triangles. Raw output proof/art-import.txt. Fresh read-only R art dispatched immediately with raw proof and contact-sheet path. Contract patch round2 merged 244c715 and fresh R contract-final dispatched.
+
+## 2026-09-12 import and simulation proof progress
+Godot 4.7.2 imported all 15 GLBs successfully. This intermediate editor import reports missing scenes/Main.tscn (client lane not yet merged), so it is not a runtime pass. Raw intermediate output retained as proof/godot-art-import.txt. Lead owns generated .glb.import and shared-script .uid metadata on main; tests/.gdignore excludes .NET proof source from Godot import/export. Sim reports both frozen seam and supplemental timing proof green with real factory; substantive regression/full match proof still in progress.

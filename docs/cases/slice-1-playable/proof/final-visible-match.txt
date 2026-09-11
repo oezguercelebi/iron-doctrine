@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M1 Pro
+
+PROOF_PLAY_STARTED ordinary player orders; no simulation access
+CLIENT_READY slot=0 entities=2 models=3
+PROOF_SCREENSHOT /Users/oezguercelebi/GitHub/iron-doctrine/docs/cases/slice-1-playable/proof/final-finished-match.png result=Ok
+PROOF_PLAY_FINISHED tick=2701 result=victory orders=113 models=15

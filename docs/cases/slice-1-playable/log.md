@@ -80,3 +80,12 @@ Sim R1 returned P1 hiddenTargetId position substitution and P2 appended Exit exe
 
 ## 2026-09-12 client approved
 Fresh client-r2 R APPROVE: both R2 findings resolved, raw targeted checks and main build pass. It correctly notes post-R2 visible match remains integration work and manual dispatch covers only the recorded subset. Main post-R2 import and headless startup already pass without errors; final visible completion follows sim patch2.
+
+## 2026-09-12 sim second patch baseline evidence
+Raw proof/sim-r2-baseline.txt records an actual temporary build of e5f29ee sim source with the new boundary regressions. Existing proofs pass; all three new groups fail (hidden incidental target, early appended exit, retained capture orders), process exit134. This is intentional regression evidence, not a current integration failure.
+
+## 2026-09-12 final simulation merge and integrated gates
+Sim08feb3b passed lane check: three src/Sim files plus Program and OrderBoundaryProof only. Merged90b2864. Main full regression exits0, including all8review regression groups; paired full match hash unchanged at tick2192. Fresh sim-r2 R dispatched immediately with raw main proof and baseline failures. Godot .NET final build zero warnings/errors, final import and headless boot clean. Visible final match launched from the merged source with ordinary public player orders and uniform4xclock. Worktree removed after merge; no implementation lanes remain open on disk.
+
+## 2026-09-12 final visible match passed
+Merged90b2864 actual Godot4.7.2/OpenGL match reached VICTORY at tick2701 (02:15),113ordinary public player orders,15models loaded. Engine viewport saved proof/final-finished-match.png successfully; lead inspected full rendered result. Raw final-visible-match.txt, exit0, no runtime errors. Post-patch client input proof was also repeated on final sim and passed. Mac later locked, so a further Computer Use observation was unavailable; this final screenshot comes directly from the game's viewport. Earlier manual mouse/keyboard evidence remains explicitly scoped to its tested head. No OS-lock bypass attempted or needed for engine-rendered proof.

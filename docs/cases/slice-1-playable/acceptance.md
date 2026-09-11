@@ -1,6 +1,6 @@
 # Acceptance evidence
 
-Implementation and manual proof are complete; post-patch integrated run and fresh final case R remain pending. Historical failed proofs are retained as labeled intermediate evidence, not counted as current passes.
+Implementation, regression and visible/manual proof are complete. Final independent simulation and case review verdicts are pending. Historical failed proofs are retained as labeled intermediate evidence, not counted as current passes.
 
 | Requirement | Evidence |
 | --- | --- |
@@ -25,13 +25,13 @@ Implementation and manual proof are complete; post-patch integrated run and fres
 
 ## Integration gates
 
-1. Plain .NET regression executable: **PASS**, proof/sim-r1.txt, including five R regressions.
+1. Plain .NET regression executable: **PASS**, proof/final-sim.txt, including five R1 and three R2 regression groups.
 2. Complete deterministic replay: **PASS**, default match defeats player tick2192; paired hash C22B028182E524DEE442193CE933D104F4988477B59CFAB43F429AEF3141AB73.
-3. Godot4.7.2 .NET compile: prior integrated builds **PASS**, zero warnings/errors; final post-patch build pending.
-4. Original glTF validation/import: **PASS**, proof/art-import.txt and godot-import.txt.
-5. Headless Godot startup: prior integrated boot **PASS**; final post-patch startup pending.
-6. Visible complete local match: **PASS** at tick3630, victory,149publicorders,15models; first-visible-match.txt/png. Mouse/keyboard construction, queues/refund, control group/box selection, move/zoom, pause, resign and rematch **PASS**, manual-input.md and screenshots. Final post-patch finish pending.
-7. Lane/scope hygiene and fresh case R: mechanical checks **PASS**; lane reviews and final review pending completion.
+3. Godot4.7.2 .NET compile: **PASS**, proof/final-build.txt, zero warnings/errors.
+4. Original glTF validation/import: **PASS**, proof/art-import.txt and final-import.txt.
+5. Headless Godot startup: **PASS**, proof/final-headless.txt, actual final source.
+6. Visible complete local match: **PASS** on final merged source at tick2701 (02:15), victory,113public orders,15models; final-visible-match.txt and final-finished-match.png. Mouse/keyboard construction, queues/refund, control group/box selection, move/zoom, pause, resign and rematch **PASS**, manual-input.md and screenshots. Post-patch targeted client input proof also passes on final sim.
+7. Lane/scope hygiene and fresh case R: mechanical checks **PASS**; contract, art and client independently approved; final simulation/case verdicts pending.
 
 Crew's TypeScript example is inapplicable to the locked C# stack. No npm project was added. Full integration checks use the stack equivalents above.
 

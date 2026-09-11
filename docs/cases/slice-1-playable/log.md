@@ -13,3 +13,9 @@ Claude/fable reviewer probe failed: organization disabled Claude subscription ac
 
 ## 2026-09-12 C freeze and next wave
 Adopted C proposal into src/Contracts/**, data/slice1.placeholders.json, frozen tests/SeamConformance.cs, contract.md. Frozen sim factory and client Initialize seam. Shared contract compiles; executable proof initially fails CS0234 (IronDoctrine.Sim absent) as expected, saved proof/contract-red.txt. No feature sim exists yet. Client and sim fan out together from this committed HEAD; art continues as independent third I. tests/SimProof.csproj is a lead-owned manifest; SeamConformance.cs is frozen; sim may add other tests and extend Program.cs. Lanes locked in plan before spawn.
+
+## 2026-09-12 review dispatch
+Fresh Crew R contract spawn dispatched immediately after adoption commit 09d071a. Range b60816f..09d071a, raw red proof supplied, no builder narrative. Reviewer output pending in reviews/contract.md. Sim/client spawned together with explicit gpt-6-astra/xhigh in isolated worktrees.
+
+## 2026-09-12 integration preparation
+Added C# stack gate mapping in acceptance.md; Crew TypeScript example is inapplicable. Lead composition root wires IMatchFactory and MatchClient only. README now identifies the accepted scaffold and local launch/proof entry points; gameplay claims remain pending until proof. No push.

@@ -2,13 +2,13 @@
 
 A real-time strategy game of **named commanders and clashing doctrines**.
 
-Inspired by *Command & Conquer: Generals* (2003) and its expansion *Zero Hour* (2003). Original game. Original names, art, and audio. Not affiliated with Electronic Arts.
+Original game, models, map geometry, and audio. Research references live in docs/research and do not define the playable content.
 
-This repo is **design and research only**. There is no game client yet. Stack: Godot **4.8 .NET** ([docs/CONSTRAINTS.md](docs/CONSTRAINTS.md); 4.7.2 until 4.8 is stable). AI orchestrator: [AGENTS.md](AGENTS.md), then [docs/catalog/SLICE.md](docs/catalog/SLICE.md).
+The accepted [slice-1-playable case](docs/cases/slice-1-playable/status.md) is building the first local match. Engine baseline: **Godot 4.7.2 .NET**, moving to 4.8 when stable. The simulation is plain C#, driven by one clock and submitted orders; Godot renders the result. [Constraints](docs/CONSTRAINTS.md).
 
 ## What it is
 
-Three asymmetric factions. You pick a commander. You build a base anywhere on the map, fight over finite supply, spend combat experience on battlefield powers, and try to wipe the other army off the field.
+Three asymmetric factions. You pick a commander. You build a base anywhere on the map, fight over finite supply, spend combat experience on battlefield powers, and win by destroying every enemy building. Losing an army is recoverable.
 
 **Goal: multiplayer** (peer-to-peer / LAN, no backend, up to 8). **First step: 1 vs computer.** Same match. No netcode until that is fun.
 
@@ -56,11 +56,27 @@ These names are placeholders. They will not appear in shipping product copy unti
 | [docs/research/FACTIONS.md](docs/research/FACTIONS.md) | Three doctrines + Zero Hour commanders |
 | [docs/research/SOURCES.md](docs/research/SOURCES.md) | Citations |
 
-No numbers. No frozen product names. No app.
+Catalog sheets contain no balance numbers or frozen product names. All temporary gameplay tuning lives in [data/slice1.placeholders.json](data/slice1.placeholders.json).
 
 ## Status
 
 - Game name: **Iron Doctrine**
-- App: not started
+- App: slice-1 implementation in progress; [case status](docs/cases/slice-1-playable/status.md)
 - Stack: Godot 4.8 .NET. Tick sim, glTF view, lockstep LAN/P2P later. No backend.
 - Backend: none, by design
+
+## Run locally
+
+Requires Godot **4.7.2 .NET** and .NET SDK **8.0.425** (or a compatible .NET 8 feature band). A standard Godot build without .NET support will not work. No network service is required by the match.
+
+```sh
+./tools/run.sh
+```
+
+The launcher finds the local ignored toolchains in `.tools/`. With your own installations, put `dotnet` on PATH and set `IRON_GODOT` to the Godot .NET executable. It checks the engine version, builds C#, imports meshes, and starts the match.
+
+```sh
+./tools/proof.sh
+```
+
+The proof executable runs the plain C# simulation independently of Godot. Proof records and independent review verdicts live in [the case folder](docs/cases/slice-1-playable/).

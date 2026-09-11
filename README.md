@@ -4,7 +4,7 @@ A real-time strategy game of **named commanders and clashing doctrines**.
 
 Inspired by *Command & Conquer: Generals* (2003) and its expansion *Zero Hour* (2003). Original game. Original names, art, and audio. Not affiliated with Electronic Arts.
 
-This repo is **design and research only**. There is no game client yet. Tech stack is undecided. AI orchestrator: [AGENTS.md](AGENTS.md), then [docs/catalog/SLICE.md](docs/catalog/SLICE.md).
+This repo is **design and research only**. There is no game client yet. Stack: Godot **4.8 .NET** ([docs/CONSTRAINTS.md](docs/CONSTRAINTS.md); 4.7.2 until 4.8 is stable). AI orchestrator: [AGENTS.md](AGENTS.md), then [docs/catalog/SLICE.md](docs/catalog/SLICE.md).
 
 ## What it is
 
@@ -27,7 +27,7 @@ These names are placeholders. They will not appear in shipping product copy unti
 | File | What it is |
 | --- | --- |
 | [docs/VISION.md](docs/VISION.md) | Goal, non-goals, first slice |
-| [docs/CONSTRAINTS.md](docs/CONSTRAINTS.md) | No backend, original IP, stack TBD |
+| [docs/CONSTRAINTS.md](docs/CONSTRAINTS.md) | No backend, original IP, Godot 4.8 .NET |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What comes after this folder |
 | [AGENTS.md](AGENTS.md) | How to read this repo |
 | [docs/catalog/README.md](docs/catalog/README.md) | Catalog index |
@@ -62,5 +62,5 @@ No numbers. No frozen product names. No app.
 
 - Game name: **Iron Doctrine**
 - App: not started
-- Stack: not chosen
+- Stack: Godot 4.8 .NET. Tick sim, glTF view, lockstep LAN/P2P later. No backend.
 - Backend: none, by design

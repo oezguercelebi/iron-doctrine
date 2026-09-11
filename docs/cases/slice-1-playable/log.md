@@ -19,3 +19,6 @@ Fresh Crew R contract spawn dispatched immediately after adoption commit 09d071a
 
 ## 2026-09-12 integration preparation
 Added C# stack gate mapping in acceptance.md; Crew TypeScript example is inapplicable. Lead composition root wires IMatchFactory and MatchClient only. README now identifies the accepted scaffold and local launch/proof entry points; gameplay claims remain pending until proof. No push.
+
+## 2026-09-12 R contract — block, patch round 1
+R returned P2 tools/review_case.py:34: numbered source used working tree while diff used requested commit. Patched harness to read source with git show <head>:<path>. R also found a proof gap: frozen seam lacks pre-Step gameplay assertion. Added a supplemental proof task in the sim lane; frozen SeamConformance.cs remains unchanged and the accepted next-tick contract remains unchanged. No user decision is needed for these reversible in-scope fixes. Fresh R follows the patch. Missing-factory red accepted as appropriate at this phase.

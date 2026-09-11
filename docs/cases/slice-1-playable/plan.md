@@ -5,3 +5,4 @@
 - [ ] client · building · lane src/Client/**, scenes/** · after contract · 3D view, HUD, inputs, sound, fog, pause/results.
 - [ ] integration · open · lane hubs on main · after art,sim,client · Runtime, manifests, shared contracts/data, launch/build, visible match and gates.
 - [ ] review · open · lane none · after each merge · Fresh read-only R on lane and final range.
+- [ ] contract-proof-patch · building · lane tests/SubmissionTiming.cs · after contract · Assert Submit leaves visible gameplay unchanged until Step; supplement frozen test.

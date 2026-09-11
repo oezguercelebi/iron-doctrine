@@ -32,11 +32,11 @@ context += args.context
 paths = list(dict.fromkeys(context + changed))
 for name in paths:
     path = root / name
-    if not path.is_file() or path.suffix in {'.glb','.blend','.png','.jpg','.bin'}:
+    if path.suffix in {'.glb','.blend','.png','.jpg','.bin'}:
         continue
     try:
-        content = path.read_text()
-    except UnicodeDecodeError:
+        content = subprocess.check_output(['git', 'show', f'{args.head}:{name}'], cwd=root, stderr=subprocess.PIPE).decode('utf-8')
+    except (subprocess.CalledProcessError, UnicodeDecodeError):
         continue
     parts.append(f'\nSOURCE {name}\n' + '\n'.join(f'{i}: {line}' for i,line in enumerate(content.splitlines(), 1)))
 parts.append('\nRAW GIT DIFF\n' + diff)

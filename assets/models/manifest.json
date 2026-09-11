@@ -1,0 +1,372 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "up": "+Y",
+  "forward": "-Z",
+  "origin": "ground center",
+  "purpose": "visual geometry only; no gameplay numbers",
+  "assets": {
+    "dozer": {
+      "catalog_id": "build.dozer",
+      "resource": "res://assets/models/dozer.glb",
+      "bounds_min": [
+        -1.75,
+        0.0,
+        -2.165
+      ],
+      "bounds_max": [
+        1.75,
+        2.59,
+        1.48
+      ],
+      "dimensions": [
+        3.5,
+        2.59,
+        3.645
+      ],
+      "triangles": 16072,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "gatherer": {
+      "catalog_id": "eco.chinook",
+      "resource": "res://assets/models/gatherer.glb",
+      "bounds_min": [
+        -5.2622,
+        0.0,
+        -2.9
+      ],
+      "bounds_max": [
+        5.2622,
+        2.7518,
+        2.72
+      ],
+      "dimensions": [
+        10.5244,
+        2.7518,
+        5.62
+      ],
+      "triangles": 7616,
+      "team_material": "team_color",
+      "assemblies": [
+        "body",
+        "rotor_left",
+        "rotor_right"
+      ]
+    },
+    "fusion": {
+      "catalog_id": "power.fusion",
+      "resource": "res://assets/models/fusion.glb",
+      "bounds_min": [
+        -3.25,
+        0.0,
+        -3.1
+      ],
+      "bounds_max": [
+        3.25,
+        3.245,
+        3.1
+      ],
+      "dimensions": [
+        6.5,
+        3.245,
+        6.2
+      ],
+      "triangles": 6348,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "command": {
+      "catalog_id": "prod.command",
+      "resource": "res://assets/models/command.glb",
+      "bounds_min": [
+        -4.2,
+        0.0,
+        -3.75
+      ],
+      "bounds_max": [
+        4.2,
+        6.13,
+        3.75
+      ],
+      "dimensions": [
+        8.4,
+        6.13,
+        7.5
+      ],
+      "triangles": 5604,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "barracks": {
+      "catalog_id": "prod.barracks",
+      "resource": "res://assets/models/barracks.glb",
+      "bounds_min": [
+        -3.35,
+        0.0,
+        -3.65
+      ],
+      "bounds_max": [
+        3.35,
+        3.68,
+        3.65
+      ],
+      "dimensions": [
+        6.7,
+        3.68,
+        7.3
+      ],
+      "triangles": 4381,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "factory": {
+      "catalog_id": "prod.factory",
+      "resource": "res://assets/models/factory.glb",
+      "bounds_min": [
+        -5.05,
+        0.0,
+        -4.85
+      ],
+      "bounds_max": [
+        5.05,
+        5.18,
+        4.85
+      ],
+      "dimensions": [
+        10.1,
+        5.18,
+        9.7
+      ],
+      "triangles": 4944,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "dropoff": {
+      "catalog_id": "eco.dropoff",
+      "resource": "res://assets/models/dropoff.glb",
+      "bounds_min": [
+        -4.45,
+        0.0,
+        -4.25
+      ],
+      "bounds_max": [
+        4.45,
+        4.075,
+        4.25
+      ],
+      "dimensions": [
+        8.9,
+        4.075,
+        8.5
+      ],
+      "triangles": 5408,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "rifle": {
+      "catalog_id": "inf.rifle",
+      "resource": "res://assets/models/rifle.glb",
+      "bounds_min": [
+        -0.4614,
+        0.0,
+        -0.88
+      ],
+      "bounds_max": [
+        0.4614,
+        1.851,
+        0.355
+      ],
+      "dimensions": [
+        0.9228,
+        1.851,
+        1.235
+      ],
+      "triangles": 4172,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "rocket": {
+      "catalog_id": "inf.rocket",
+      "resource": "res://assets/models/rocket.glb",
+      "bounds_min": [
+        -0.4602,
+        0.0,
+        -0.822
+      ],
+      "bounds_max": [
+        0.4602,
+        1.851,
+        0.495
+      ],
+      "dimensions": [
+        0.9204,
+        1.851,
+        1.317
+      ],
+      "triangles": 4600,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "tank": {
+      "catalog_id": "armor.basic",
+      "resource": "res://assets/models/tank.glb",
+      "bounds_min": [
+        -1.69,
+        0.0,
+        -3.65
+      ],
+      "bounds_max": [
+        1.69,
+        2.9807,
+        2.13
+      ],
+      "dimensions": [
+        3.38,
+        2.9807,
+        5.78
+      ],
+      "triangles": 15868,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "scout": {
+      "catalog_id": "veh.scout_gun",
+      "resource": "res://assets/models/scout.glb",
+      "bounds_min": [
+        -1.4104,
+        -0.0,
+        -2.1325
+      ],
+      "bounds_max": [
+        1.4104,
+        2.8803,
+        2.06
+      ],
+      "dimensions": [
+        2.8208,
+        2.8803,
+        4.1925
+      ],
+      "triangles": 5940,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "aa_turret": {
+      "catalog_id": "def.patriot",
+      "resource": "res://assets/models/aa_turret.glb",
+      "bounds_min": [
+        -2.0297,
+        0.0,
+        -2.0297
+      ],
+      "bounds_max": [
+        2.0254,
+        2.9852,
+        2.0297
+      ],
+      "dimensions": [
+        4.0551,
+        2.9852,
+        4.0594
+      ],
+      "triangles": 3296,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "dock": {
+      "catalog_id": "map.dock",
+      "resource": "res://assets/models/dock.glb",
+      "bounds_min": [
+        -3.875,
+        0.0,
+        -3.475
+      ],
+      "bounds_max": [
+        3.875,
+        2.94,
+        3.475
+      ],
+      "dimensions": [
+        7.75,
+        2.94,
+        6.95
+      ],
+      "triangles": 8360,
+      "team_material": null,
+      "assemblies": [
+        "body"
+      ]
+    },
+    "garrison": {
+      "catalog_id": "map.garrison",
+      "resource": "res://assets/models/garrison.glb",
+      "bounds_min": [
+        -3.25,
+        0.0,
+        -3.09
+      ],
+      "bounds_max": [
+        3.25,
+        5.655,
+        2.85
+      ],
+      "dimensions": [
+        6.5,
+        5.655,
+        5.94
+      ],
+      "triangles": 5896,
+      "team_material": "team_color",
+      "assemblies": [
+        "body"
+      ]
+    },
+    "rocks": {
+      "catalog_id": "ter.unbuildable",
+      "resource": "res://assets/models/rocks.glb",
+      "bounds_min": [
+        -2.3823,
+        0.0,
+        -1.8097
+      ],
+      "bounds_max": [
+        1.98,
+        1.8404,
+        1.462
+      ],
+      "dimensions": [
+        4.3623,
+        1.8404,
+        3.2717
+      ],
+      "triangles": 2280,
+      "team_material": null,
+      "assemblies": [
+        "body"
+      ]
+    }
+  }
+}

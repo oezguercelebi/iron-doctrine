@@ -9,12 +9,18 @@ internal sealed partial class Match
     private void StepBody(Body body)
     {
         if (!body.Complete || body.Owner >= 0 && Players[body.Owner].Eliminated) return;
+        if (body.Actions.Count > 0 && body.Actions[0].Slot != body.Owner) Abort(body);
         if (body.Cooldown > 0) body.Cooldown--;
         if (Tick - body.LastHit >= C.Rules.SelfHealDelayTicks && C.Ranks[body.Rank].HealHpPerTick > 0) body.Hp = Math.Min(MaxHp(body), body.Hp + C.Ranks[body.Rank].HealHpPerTick);
         if (body.ContainerId != 0)
         {
             body.Activity = EntityActivity.Contained;
             if (Bodies.TryGetValue(body.ContainerId, out var container) && Role(container).FireFromTransport) AutoFire(body, container.Pos);
+            return;
+        }
+        if (body.Actions.Count > 0 && body.Actions[0].Kind == OrderKind.Exit)
+        {
+            QueuedExit(body, body.Actions[0]);
             return;
         }
         if (Role(body).IsBuilding)
@@ -190,6 +196,7 @@ internal sealed partial class Match
         if (--rifle.CaptureLeft > 0) return;
         RefundQueue(building);
         if (building.BuilderId != 0 && Bodies.TryGetValue(building.BuilderId, out var builder)) { builder.ConstructionId = 0; Abort(builder); }
+        Abort(building);
         building.BuilderId = 0; building.Owner = rifle.Owner; building.Rally = building.Pos;
         FinishAction(rifle);
     }
@@ -199,9 +206,16 @@ internal sealed partial class Match
         { FinishAction(infantry); return; }
         infantry.TargetId = container.Id; infantry.Activity = EntityActivity.Moving;
         if (MoveToward(infantry, container.Pos, Role(container).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) return;
-        if (container.RoleId == "eco.chinook") Abort(container);
+        if (container.RoleId == "eco.chinook" || container.Owner != infantry.Owner) Abort(container);
         container.Owner = infantry.Owner; container.Occupants.Add(infantry.Id); infantry.ContainerId = container.Id; infantry.Pos = container.Pos;
         FinishAction(infantry); infantry.Activity = EntityActivity.Contained;
+    }
+    private void QueuedExit(Body carrier, MatchOrder action)
+    {
+        foreach (var id in action.ActorIds)
+            if (carrier.Owner == action.Slot && Bodies.TryGetValue(id, out var actor) && actor.Owner == action.Slot && (actor.Id == carrier.Id || actor.ContainerId == carrier.Id))
+                Exit(actor, action.Position);
+        FinishAction(carrier);
     }
     private void Exit(Body actor, WorldPoint desired)
     {
@@ -214,7 +228,7 @@ internal sealed partial class Match
             var point = FindFree(anchor, Role(infantry), infantry.Id);
             if (point == null) continue;
             container.Occupants.Remove(id); infantry.ContainerId = 0; infantry.Pos = point.Value; infantry.Destination = point.Value; infantry.Activity = EntityActivity.Idle;
-            if (container.RoleId == "map.garrison" && container.Occupants.Count == 0) container.Owner = -1;
+            if (container.RoleId == "map.garrison" && container.Occupants.Count == 0) { Abort(container); container.Owner = -1; }
         }
     }
 }

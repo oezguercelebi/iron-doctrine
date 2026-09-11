@@ -116,7 +116,7 @@ internal sealed partial class Match
         if (victim.ContainerId != 0 && Bodies.TryGetValue(victim.ContainerId, out var parent))
         {
             parent.Occupants.Remove(victim.Id);
-            if (parent.RoleId == "map.garrison" && parent.Occupants.Count == 0) parent.Owner = -1;
+            if (parent.RoleId == "map.garrison" && parent.Occupants.Count == 0) { Abort(parent); parent.Owner = -1; }
         }
         foreach (var id in victim.Occupants.ToArray())
         {

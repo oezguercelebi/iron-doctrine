@@ -15,11 +15,14 @@ internal sealed partial class Match
         pending.Add(copy);
         return new(true, "");
     }
+    private static bool TakesEntityTarget(OrderKind kind) => kind is OrderKind.Attack or OrderKind.ForceAttack or OrderKind.Guard or OrderKind.Repair or OrderKind.Capture or OrderKind.Gather or OrderKind.Enter;
     private string Validate(MatchOrder order)
     {
         if (phase != MatchPhase.Running) return "Match has ended.";
         if (!Players.TryGetValue(order.Slot, out var player) || player.Eliminated) return "Inactive player.";
         if (!Enum.IsDefined(order.Kind)) return "Unknown order.";
+        // Reject the shape before looking up a target: guessed ids must not redirect point orders or reveal existence.
+        if (order.TargetId != 0 && !TakesEntityTarget(order.Kind)) return "This order does not take an entity target.";
         if (order.Kind == OrderKind.Resign) return order.ActorIds.Length == 0 ? "" : "Resign takes no units.";
         if (order.ActorIds.Length == 0 || order.ActorIds.Distinct().Count() != order.ActorIds.Length) return "Select owned units.";
         foreach (var id in order.ActorIds) if (!Bodies.TryGetValue(id, out var b) || b.Owner != order.Slot) return "Select owned units.";
@@ -120,10 +123,18 @@ internal sealed partial class Match
                     player.Money += roles[actor.RoleId].Cost * (actor.Complete ? C.Rules.SellRefundPercent : C.Rules.ConstructionCancelRefundPercent) / 100;
                     RefundQueue(actor); Destroy(actor, null); break;
                 case OrderKind.Rally: actor.Rally = order.Position; break;
-                case OrderKind.Exit: Exit(actor, order.Position); break;
+                case OrderKind.Exit:
+                    if (!order.Append) Exit(actor, order.Position);
+                    else
+                    {
+                        // Movement belongs to the container even when only one contained infantry was selected.
+                        var carrier = actor.ContainerId != 0 ? Bodies[actor.ContainerId] : actor;
+                        carrier.Actions.Add(order with { ActorIds = new[] { actor.Id }, Append = false });
+                    }
+                    break;
                 default:
                     if (!order.Append && order.Kind != OrderKind.Waypoint) Abort(actor);
-                    if (order.Kind != OrderKind.Stop) actor.Actions.Add(order with { ActorIds = new[] { id }, Append = false, Position = order.TargetId != 0 && Bodies.TryGetValue(order.TargetId, out var target) ? target.Pos : order.Position });
+                    if (order.Kind != OrderKind.Stop) actor.Actions.Add(order with { ActorIds = new[] { id }, Append = false, Position = TakesEntityTarget(order.Kind) && order.TargetId != 0 && Bodies.TryGetValue(order.TargetId, out var target) && (target.Owner == order.Slot || Visible(order.Slot, target.Pos)) ? target.Pos : order.Position });
                     break;
             }
         }

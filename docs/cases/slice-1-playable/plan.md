@@ -9,3 +9,5 @@
 
 - [ ] sim-r1 · building · lane src/Sim/**, tests/** · after sim · Five independent R edge cases with regressions.
 - [ ] client-r1 · idle-review · lane src/Client/** · after client · Attack, producer cancellation, public combat feedback and radar gating fixes.
+
+- [ ] client-r2 · building · lane src/Client/** · after client-r1 · Preserve legal build point; distinguish unknown enemy passenger/activity fields.

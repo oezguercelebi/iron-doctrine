@@ -1,6 +1,6 @@
 # Roadmap
 
-This folder is phase 0–2. First playable is next. Nothing below that is scheduled.
+Phases 0–2 are complete. The accepted first playable is implemented and undergoing its final case review. Later phases are not scheduled.
 
 ## 0. This repo (done)
 
@@ -22,7 +22,7 @@ Catalog: [docs/catalog/](catalog/README.md).
 - 12 loadouts as deltas
 - Slice-1 as one filter sheet; combat join on every role
 
-Numbers, product names, and drawn map geometry are still later. The map *roster* (2–8 players) is catalogued.
+Final balance and product names are still later. The slice uses one labeled placeholder tuning file and an original mirrored map. The map *roster* (2–8 players) is catalogued.
 
 ## 2. Stack decision (done)
 
@@ -30,7 +30,7 @@ Godot **4.8 .NET**, top-down 3D. Sim is a tick + orders, not `Node`. View is glT
 
 ## 3. First playable — 1 vs computer
 
-One human, one AI, one 2-slot map, vanilla Aegis. Win by destroying enemy buildings. Proof is a match you can finish, not a menu. No netcode.
+One human, one AI, one 2-slot map, vanilla Aegis. Win by destroying enemy buildings. Proof is a match you can finish, not a menu. No netcode. See [slice-1-playable](cases/slice-1-playable/status.md) and its [acceptance evidence](cases/slice-1-playable/acceptance.md).
 
 ## 4. Multiplayer (the goal)
 

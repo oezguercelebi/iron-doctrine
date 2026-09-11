@@ -4,7 +4,7 @@ A real-time strategy game of **named commanders and clashing doctrines**.
 
 Original game, models, map geometry, and audio. Research references live in docs/research and do not define the playable content.
 
-The accepted [slice-1-playable case](docs/cases/slice-1-playable/status.md) is building the first local match. Engine baseline: **Godot 4.7.2 .NET**, moving to 4.8 when stable. The simulation is plain C#, driven by one clock and submitted orders; Godot renders the result. [Constraints](docs/CONSTRAINTS.md).
+The accepted [slice-1-playable case](docs/cases/slice-1-playable/status.md) implements the first local match. Engine baseline: **Godot 4.7.2 .NET**, moving to 4.8 when stable. The simulation is plain C#, driven by one clock and submitted orders; Godot renders the result. [Constraints](docs/CONSTRAINTS.md).
 
 ## What it is
 
@@ -61,7 +61,7 @@ Catalog sheets contain no balance numbers or frozen product names. All temporary
 ## Status
 
 - Game name: **Iron Doctrine**
-- App: slice-1 implementation in progress; [case status](docs/cases/slice-1-playable/status.md)
+- App: playable slice-1; final case review in progress; [case status](docs/cases/slice-1-playable/status.md)
 - Stack: Godot 4.8 .NET. Tick sim, glTF view, lockstep LAN/P2P later. No backend.
 - Backend: none, by design
 
@@ -78,5 +78,9 @@ The launcher finds the local ignored toolchains in `.tools/`. With your own inst
 ```sh
 ./tools/proof.sh
 ```
+
+The match boots directly into the two-slot skirmish: your Command and Dozer against the medium AI. Select the Dozer, build Fusion, then a Drop-off by a supply dock, Barracks and Factory. Destroy every enemy building to win. Press **H** for the in-game controls guide, **Escape** to pause/resign, and use **Rematch** on the result screen. [Full controls](src/Client/README.md).
+
+All balance values are placeholders. Optional AA linking is deferred. The first integrated visible proof reached victory; manual checks cover construction, production/refunds, selection, pause, resign and rematch. [Acceptance evidence](docs/cases/slice-1-playable/acceptance.md).
 
 The proof executable runs the plain C# simulation independently of Godot. Proof records and independent review verdicts live in [the case folder](docs/cases/slice-1-playable/).

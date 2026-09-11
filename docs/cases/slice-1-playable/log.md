@@ -64,3 +64,9 @@ Sim R blocks five executable edge cases: builder embedded in footprint; fallback
 
 ## 2026-09-12 manual controls proof
 Actual patched client against integrated sim, Computer Use mouse and keyboard. Fusion placed on open ground, completion changed funds6000→5400 and power0→20; multiple Dozers queued; control group1 saved/recalled. Production cancellation independently observed with queued batch: funds2500→3000 after next tick and queue item removed. Box selection selected7units, rightclickMove activity displayed, wheel zoom and H guide worked. Escape paused clock; Resign from pause produced DEFEAT at01:12; Rematch reset to00:00,6000funds, Command+Dozer. Screenshots and detailed limits in proof/manual-input.md. Quit to desktop exited cleanly. These checks supplement simulation/order proofs; they do not claim every combat interaction was manually clicked.
+
+## 2026-09-12 R client-r1 block — patch round2
+Fresh R found two correctness issues: P2 MatchClient:378 Build leaked picked target id so execution could substitute nearby entity position for ghost point; P2 FieldHud:220/213 redacted enemy passenger/activity data displayed as known empty/idle. These are correctness fixes, not nits; assigned second and final client patch round in a fresh worktree. No frozen seam or outcome change. Manual controls evidence is now recorded; original R did not have that newly recorded evidence.
+
+## 2026-09-12 sim patch1 merged and R dispatched
+Sim d935dc3 lane check passes: five src/Sim files, Program invocation and new ReviewRegressionProof only. Merged a47ae35; full main proof passes, including all five R regression scenarios. Full paired match defeats player at2192, hash C22B028182E524DEE442193CE933D104F4988477B59CFAB43F429AEF3141AB73. Fresh R sim-r1 dispatched with raw main proof; frozen tests/contracts/manifests unchanged. Worktree removed after merge.

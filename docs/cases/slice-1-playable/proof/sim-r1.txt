@@ -1,0 +1,25 @@
+PASS seam: ids, slots, fog, private HUD, ownership, construction, replay, snapshots, pause, result
+PASS submission timing: Submit leaves gameplay unchanged; next Step executes detached order.
+PASS mechanics: construction prerequisites, loss and free gatherer
+PASS mechanics: production queues, owner costs, refund, rally and power
+PASS mechanics: finite dock, exclusive loading and owner-only return
+PASS mechanics: air targeting, world missiles and damage matchups
+PASS mechanics: friendly crush and force attack
+PASS mechanics: garrison ownership, armor and destruction spill
+PASS mechanics: scout fire-out, gatherer transport and local unload
+PASS mechanics: research, interruptible capture and original-owner refunds
+PASS mechanics: paid allied building repair and own factory repair
+PASS mechanics: kill-value rank health bonuses and delayed self-heal
+PASS mechanics: fog memory, redaction, defensive snapshots and hidden collision
+PASS mechanics: terrain pathing, waypoints, guard and flying traversal
+PASS mechanics: eight-slot teams, unfinished buildings and elimination
+PASS mechanics: AI hidden-information equality, defense and depleted-dock expansion
+PASS review regression: builder clears its future footprint and can leave
+PASS review regression: blocked paths cannot repair, capture, enter or build remotely
+PASS review regression: owned occupied garrisons prevent elimination
+PASS review regression: powered defenses execute attack and force-attack orders
+PASS review regression: stopped cargo can be delivered after every dock empties
+Full match progress tick=600 playerBuildings=4 aiMoney=4875 aiArmy=2
+Full match progress tick=1200 playerBuildings=4 aiMoney=4325 aiArmy=19
+Full match progress tick=1800 playerBuildings=2 aiMoney=6100 aiArmy=22
+PASS full match: default human-v-AI setup, 17 public player orders, AI base/gather/compose/attack/defend, defeat at tick 2192, deterministic replay C22B028182E524DEE442193CE933D104F4988477B59CFAB43F429AEF3141AB73, elapsed 6.4s

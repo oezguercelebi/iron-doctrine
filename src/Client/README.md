@@ -4,6 +4,8 @@
 
 The client takes one detached snapshot after **every** fixed simulation step and consumes its current-tick events before advancing again. Selection, camera, control groups, interpolation, UI and sound remain presentation state. The battlefield loads each role's configured glTF resource directly, replaces its `team_color` material per owner, and respects snapshot visibility. Radar does not reveal terrain or hidden units.
 
+Enemy facing follows successive visible positions. Enemy combat feedback uses visible health changes and public activity transitions; it never reads redacted enemy destinations or targets or invents shot endpoints. Private order targets are used only for the viewer's own instant-fire tracers. A disabled radar suppresses live minimap entity blips, including selected units.
+
 ## Controls
 
 | Input | Action |
@@ -17,6 +19,7 @@ The client takes one detached snapshot after **every** fixed simulation step and
 | Middle drag / wheel | Pan / zoom |
 | Space / Tab | Focus selection / find Dozer |
 | Q / X / G | Attack-move / stop / guard |
+| Z | Ordinary attack against a visible enemy, including after capture research |
 | T / F | Append waypoint / force attack (including friendly targets) |
 | R / E / C | Repair / enter / capture |
 | V / Y / Delete | Exit passengers / rally / sell |
@@ -26,7 +29,7 @@ The client takes one detached snapshot after **every** fixed simulation step and
 | Minimap left / right click | Jump camera / issue contextual movement |
 | H / Escape | Field guide / cancel targeting, then local pause |
 
-The field guide pauses a running local match. Pause offers resume, guide, resign and desktop quit. The result screen offers rematch and quit. All labels for roles, costs, prerequisites, progress and capacities come from the frozen configuration/snapshot.
+The field guide pauses a running local match. Pause offers resume, guide, resign and desktop quit. The result screen offers rematch and quit. All labels for roles, costs, prerequisites, progress and capacities come from the frozen configuration/snapshot. Queue buttons retain the displayed producer's entity ID; snapshot ordering and a changed selection cannot redirect cancellation to a different producer. Enemy garrisons receive ordinary contextual Attack and cannot be selected as capture targets.
 
 ## Opt-in visible proof
 

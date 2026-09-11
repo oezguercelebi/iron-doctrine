@@ -13,7 +13,7 @@ public partial class FieldHud : Control
     public GameConfig Config { get; set; } = null!;
     public Battlefield Field { get; set; } = null!;
     public HashSet<int> Selection { get; set; } = new();
-    public Action<string, string, int>? Command;
+    public Action<string, string, int, int>? Command;
     public Action<WorldPoint, bool>? MapClick;
     public EntitySnapshot? Hovered { get; set; }
     public string ModeText { get; set; } = "";
@@ -35,7 +35,7 @@ public partial class FieldHud : Control
     private string _tooltip = "";
     private readonly Color _panel = new("111d23"), _line = new("304149"), _ink = new("e5eee9"), _muted = new("92a8aa"), _accent = new("84d6c1"), _amber = new("edbb77");
     private float Bottom => Size.Y - 224;
-    private sealed record ButtonRegion(Rect2 Rect, string Action, string Product, int Index, bool Enabled, string Tooltip);
+    private sealed record ButtonRegion(Rect2 Rect, string Action, string Product, int Index, int ActorId, bool Enabled, string Tooltip);
 
     public override void _Ready()
     {
@@ -60,7 +60,7 @@ public partial class FieldHud : Control
             var region = _buttons.LastOrDefault(b => b.Rect.HasPoint(point));
             if (region != null)
             {
-                if (region.Enabled) Command?.Invoke(region.Action, region.Product, region.Index);
+                if (region.Enabled) Command?.Invoke(region.Action, region.Product, region.Index, region.ActorId);
                 else Notice = region.Tooltip;
                 return true;
             }
@@ -175,7 +175,7 @@ public partial class FieldHud : Control
         foreach (var entity in Snapshot.Entities.Where(e => e.ContainerId == 0))
         {
             var role = Config.Role(entity.RoleId);
-            if (Field.VisibilityAt(entity.Position) == Visibility.Shroud || (!Snapshot.Player.Radar && !Selection.Contains(entity.Id))) continue;
+            if (Field.VisibilityAt(entity.Position) == Visibility.Shroud || !Snapshot.Player.Radar) continue;
             if (entity.IsRemembered && !role.IsBuilding) continue;
             var position = MapPosition(entity.Position);
             var color = Field.TeamColor(entity.OwnerSlot);
@@ -193,7 +193,7 @@ public partial class FieldHud : Control
 
     private void SelectionPanel()
     {
-        var chosen = Snapshot.Entities.Where(e => Selection.Contains(e.Id)).ToArray();
+        var chosen = SelectionState.Ordered(Snapshot, Selection);
         float x = 298, y = Bottom;
         Text(new Vector2(x, y + 24), "SELECTION", 11, _accent);
         if (chosen.Length == 0)
@@ -235,7 +235,7 @@ public partial class FieldHud : Control
             Bar(new Rect2(x, y + 164, 261, 4), 1 - (float)item.RemainingTicks / Math.Max(1, item.TotalTicks), _accent);
             int shown = Math.Min(6, first.Queue.Length);
             for (int i = 0; i < shown; i++)
-                Button(new Rect2(x + i * 44, y + 179, 39, 28), $"{i + 1} ×", "cancel", index: i, tooltip: $"Cancel {Config.Role(first.Queue[i].ProductId).Label}; refund {Config.Rules.QueueRefundPercent}%");
+                Button(new Rect2(x + i * 44, y + 179, 39, 28), $"{i + 1} ×", "cancel", index: i, actorId: first.Id, tooltip: $"Cancel {Config.Role(first.Queue[i].ProductId).Label}; refund {Config.Rules.QueueRefundPercent}%");
         }
         else if (chosen.Length > 1)
         {
@@ -250,7 +250,7 @@ public partial class FieldHud : Control
         DrawLine(new Vector2(x - 14, y + 17), new Vector2(x - 14, Size.Y - 17), _line);
         Text(new Vector2(x, y + 24), "COMMAND", 11, _accent);
         Text(new Vector2(x + 105, y + 24), "SHIFT APPENDS ORDERS", 10, _muted);
-        var selected = Snapshot.Entities.Where(e => Selection.Contains(e.Id)).ToArray();
+        var selected = SelectionState.Ordered(Snapshot, Selection);
         if (selected.Length == 0 || selected.Any(e => e.OwnerSlot != Snapshot.ViewerSlot))
         {
             Text(new Vector2(x, y + 69), "Your selection determines the available orders.", 16, _muted);
@@ -268,6 +268,7 @@ public partial class FieldHud : Control
         if (units)
         {
             actions.Add(("MOVE", "move", "Move to a point; right click is contextual"));
+            if (selected.All(e => Config.Role(e.RoleId).Damage > 0)) actions.Add(("ATTACK  Z", "attack", "Attack a visible enemy; available after capture research"));
             actions.Add(("ATTACK-MOVE  Q", "attackmove", "Engage enemies on the way to a point"));
             actions.Add(("STOP  X", "stop", "Stop the current order and clear its queue"));
             actions.Add(("GUARD  G", "guard", "Guard a point and engage nearby enemies"));
@@ -305,7 +306,7 @@ public partial class FieldHud : Control
                 string hint = researched ? "Research complete" : pendingResearch ? "Research already queued" : !prerequisites ? "Requires " + string.Join(", ", role.Prerequisites.Select(id => Config.Role(id).Label)) : $"{role.Label} · ${role.Cost} · {role.BuildTicks / (float)Config.Rules.TickRate:0.#}s" + (role.PowerDrain > 0 ? $" · power −{role.PowerDrain}" : role.PowerSupply > 0 ? $" · power +{role.PowerSupply}" : "");
                 if (Snapshot.Player.Money < role.Cost) hint += " · insufficient funds";
                 var rect = new Rect2(x + i * (cardWidth + gap), productsY + 8, cardWidth, 64);
-                Button(rect, role.Label, builders ? "build" : "queue", role.Id, enabled: allowed, tooltip: hint, fontSize: 13, card: true);
+                Button(rect, role.Label, builders ? "build" : "queue", role.Id, actorId: selected[0].Id, enabled: allowed, tooltip: hint, fontSize: 13, card: true);
                 Text(rect.Position + new Vector2(10, 49), researched ? "COMPLETE" : $"$ {role.Cost:N0}", 13, allowed ? _accent : _muted);
             }
         }
@@ -371,7 +372,7 @@ public partial class FieldHud : Control
         Text(rect.Position + new Vector2(30, 46), "FIELD GUIDE", 28, _ink);
         Text(rect.Position + new Vector2(30, 74), "Build a base, secure supplies, destroy every enemy building.", 15, _muted);
         string[] left = { "SELECT & NAVIGATE", "LMB / drag     Select / box-select your units", "Shift + LMB     Add or remove from selection", "Ctrl + 1–9     Assign a control group", "1–9 / double-tap     Recall / focus group", "WASD / arrows     Pan camera", "Middle drag / wheel     Pan / zoom", "Space     Focus selection", "Tab     Find and select a Dozer", "H / Esc     Help / cancel mode or pause" };
-        string[] right = { "ISSUE ORDERS", "RMB     Move, attack, repair, gather, enter", "Q / X / G     Attack-move / stop / guard", "T / F     Append waypoint / force attack", "R / E / C     Repair / enter / capture", "V / Y / Del     Exit / rally / sell", "Shift + order     Append to unit order queue", "Build card → LMB     Place a legal footprint", "Producer card     Train a unit or research", "Queue number ×     Cancel and refund that item" };
+        string[] right = { "ISSUE ORDERS", "RMB / Z     Contextual order / attack target", "Q / X / G     Attack-move / stop / guard", "T / F     Append waypoint / force attack", "R / E / C     Repair / enter / capture", "V / Y / Del     Exit / rally / sell", "Shift + order     Append to unit order queue", "Build card → LMB     Place a legal footprint", "Producer card     Train a unit or research", "Queue number ×     Cancel and refund that item" };
         for (int i = 0; i < left.Length; i++)
         {
             Text(rect.Position + new Vector2(30, 113 + i * 28), left[i], i == 0 ? 12 : 13, i == 0 ? _accent : _ink);
@@ -392,14 +393,14 @@ public partial class FieldHud : Control
         DrawRect(rect, new Color("28363a"));
         DrawRect(new Rect2(rect.Position, new Vector2(rect.Size.X * Mathf.Clamp(fraction, 0, 1), rect.Size.Y)), color);
     }
-    private void Button(Rect2 rect, string label, string action, string product = "", int index = 0, bool enabled = true, string tooltip = "", int fontSize = 13, bool card = false)
+    private void Button(Rect2 rect, string label, string action, string product = "", int index = 0, int actorId = 0, bool enabled = true, string tooltip = "", int fontSize = 13, bool card = false)
     {
         bool hover = rect.HasPoint(GetLocalMousePosition());
         DrawRect(rect, !enabled ? new Color("18242a") : hover ? new Color("34504f") : new Color("203239"));
         DrawRect(rect, hover && enabled ? _accent : _line, false, 1);
         if (card) DrawRect(new Rect2(rect.Position, new Vector2(3, rect.Size.Y)), enabled ? _accent : _line);
         Text(rect.Position + new Vector2(card ? 10 : 8, card ? 25 : rect.Size.Y / 2 + fontSize * .35f), label, fontSize, enabled ? _ink : _muted, rect.Size.X - 15);
-        _buttons.Add(new ButtonRegion(rect, action, product, index, enabled, tooltip));
+        _buttons.Add(new ButtonRegion(rect, action, product, index, actorId, enabled, tooltip));
         if (hover) _tooltip = tooltip;
     }
 }

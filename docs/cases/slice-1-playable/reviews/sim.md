@@ -1,0 +1,13 @@
+**BLOCK**
+
+- **P1 — Construction can trap its dozer.** [src/Sim/Systems.cs:85](/var/folders/5h/r5rwjq6j77s3tvsdz7rwp33r0000gn/T/iron-review-q_i79av5/src/Sim/Systems.cs:85): Collision checking excludes the builder. In the default setup, building fusion directly at the dozer’s `(2200,4600)` position is legal. Construction completes around it, and subsequent movement cannot escape the footprint.
+
+- **P1 — Unreachable paths permit remote interactions.** [src/Sim/Pathing.cs:124](/var/folders/5h/r5rwjq6j77s3tvsdz7rwp33r0000gn/T/iron-review-q_i79av5/src/Sim/Pathing.cs:124): An exhausted fallback path returns success even outside interaction range. Repair, capture, and entry treat that as arrival without checking distance. Enclosed infantry can consequently enter a distant owned transport; blocked dozers can repair remotely.
+
+- **P1 — Occupied garrisons do not prevent elimination.** [src/Sim/Match.cs:105](/var/folders/5h/r5rwjq6j77s3tvsdz7rwp33r0000gn/T/iron-review-q_i79av5/src/Sim/Match.cs:105): Entry assigns player ownership, but `map.garrison` retains `Role.IsNeutral`. Destroying the last constructed building therefore ends the match while an owned, firing garrison survives. This contradicts the frozen contract’s “any surviving owned building” rule; its exception specifies neutral garrisons.
+
+- **P2 — Defenses silently ignore accepted attack orders.** [src/Sim/Systems.cs:20](/var/folders/5h/r5rwjq6j77s3tvsdz7rwp33r0000gn/T/iron-review-q_i79av5/src/Sim/Systems.cs:20): Buildings return after production and automatic fire without processing their action queue. Patriot Attack/ForceAttack orders pass validation but never execute, including force-attacking a nearby friendly target.
+
+- **P2 — Stopped gatherers can permanently retain cargo.** [src/Sim/Orders.cs:65](/var/folders/5h/r5rwjq6j77s3tvsdz7rwp33r0000gn/T/iron-review-q_i79av5/src/Sim/Orders.cs:65): Stop disables automatic gathering, while resuming Gather requires a nonempty dock. After all docks are exhausted, stopping a loaded gatherer leaves no order that delivers its cargo. Moving to a drop-off does not unload, and retained cargo also prevents infantry transport.
+
+The supplied log passes its listed checks; these findings are from source inspection, not newly executed tests. Those scenarios lack regression coverage. The full-match proof demonstrates player defeat only. The visible Godot play-to-end evidence required for the final integration gate was not supplied.

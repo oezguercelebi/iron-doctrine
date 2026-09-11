@@ -1,0 +1,9 @@
+PASS all role ids have catalog rows
+PASS eight slots retained, exactly player+AI filled
+PASS requested default loadout and independent teams
+PASS frozen seam test unchanged
+PASS all configured GLB paths exist
+PASS no engine or network namespace in pure sim
+PASS review harness parses
+PASS launch/proof wrapper syntax
+PASS diff whitespace

@@ -1,6 +1,6 @@
 # Factions and commanders
 
-Source doctrines. Our working names in the last section. Unit-by-unit sheets are later.
+Source doctrines. Our working names in the last section. Implementable factions: [docs/catalog/FACTIONS.md](../catalog/FACTIONS.md).
 
 ## How to read a side
 

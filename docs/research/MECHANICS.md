@@ -171,9 +171,7 @@ One at a time per side:
 
 ## What we will specify later
 
-- Every unit's role, counters, cost, and special ability
-- Every building's prerequisites and power draw
-- Every specialist's buff/nerf table as *our* commanders
-- Map language: spawn, docks, garrison belts, high ground, water
-- Exact XP thresholds, point budgets, cooldowns
-- Engine unit cap
+Roles, prereqs, loadouts, and map language are in [docs/catalog/](../catalog/README.md). Still later:
+
+- Exact XP thresholds, point budgets, cooldowns, costs, HP
+- Engine unit cap (the cap exists; the number does not)

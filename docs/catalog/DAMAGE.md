@@ -8,16 +8,16 @@ Qualitative matrix. Not DPS. If a cell is “poor”, that role should lose the 
 
 | id | worn by |
 | --- | --- |
-| `arm.infantry` | Rifle, rocket, suicide, hacker, worker, hero bodies |
-| `arm.light` | Humvee, technical, quad, crawler, ambulance, buggy, cycle, radar van |
-| `arm.tank` | Basic / elite / marauder / flame / gatling / mammoth |
-| `arm.arty` | Tomahawk, inferno, nuke cannon, scud — tank-ish but fragile in practice |
-| `arm.air` | All aircraft |
-| `arm.structure` | Buildings |
+| `arm.infantry` | `inf.*`, `hero.*`, `eco.hacker`, `build.worker` |
+| `arm.light` | `build.dozer`, `eco.truck`, `veh.scout_gun`, `veh.ambulance`, `veh.technical`, `veh.buggy`, `veh.quad`, `veh.toxin_spray`, `veh.radar`, `veh.cycle`, `veh.bus`, `veh.listening`, `veh.avenger`, `veh.sentry`, `veh.crawler`, `deceive.bomb_truck`, `map.car` |
+| `arm.tank` | `armor.*`, `veh.ecm`, `veh.microwave` |
+| `arm.arty` | `arty.*` — tank-ish but fragile in practice |
+| `arm.air` | `air.*`, `eco.chinook` |
+| `arm.structure` | Buildings, defenses, superweapons, capturable tech |
 | `arm.garrison` | Occupied civilian / bunker (hits the box, not the men, until it breaks) |
 | `arm.hole` | `ent.hole` — only crush, beam, or dedicated clear |
 
-Heroes sit in `arm.infantry` but resist crush.
+Heroes sit in `arm.infantry` but resist crush. Per-id join: [ROLES.md](ROLES.md) combat join. How shots travel: [DELIVERY.md](DELIVERY.md).
 
 ---
 
@@ -66,7 +66,7 @@ Heroes sit in `arm.infantry` but resist crush.
 
 ## Intercept
 
-These damage kinds can be **shot down** in flight: `dmg.rocket` from Tomahawk / Scud / some fighter missiles.
+These damage kinds can be **shot down** in flight: `dmg.rocket` from Tomahawk / Scud / some fighter missiles. Flight objects: [DELIVERY.md](DELIVERY.md).
 
 Eaters: `ab.pdl`, stinger, RPG (some), avenger, ECM (miss, not eat).
 

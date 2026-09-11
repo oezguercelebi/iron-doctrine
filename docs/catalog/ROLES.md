@@ -4,6 +4,8 @@ Every thing that exists in the match. Grouped with [MECHANICS.md](MECHANICS.md).
 
 **side:** `Aegis` `Forge` `Veil` `All` `Map`, or a commander id (`aegis.air`, `aegis.laser`, `aegis.super`, `forge.tank`, `forge.infantry`, `forge.nuke`, `veil.toxin`, `veil.demo`, `veil.stealth`).
 
+Armor, damage, delivery: **Combat join** below. Doctrines: [FACTIONS.md](FACTIONS.md).
+
 Vanilla roles apply to that side's specialists unless the loadout grid says **drop** or **replace**.
 
 ---
@@ -210,6 +212,129 @@ Veil has none. AA is their air force.
 | `map.repair_pad` | Park-to-repair | Repair Pad (ZH) | Capture. |
 | `map.arty_plat` | Captured gun | Artillery Platform (ZH) | Auto-fires. Min range. |
 | `map.reinforce` | Periodic free vehicle | Reinforcement Pad (ZH) | Vehicle depends on loadout. |
+
+---
+
+## Combat join
+
+Primary hull, outgoing damage, delivery. `—` = none (does not shoot, or cannot be shot). Occupied garrison is a *state*: hits use `arm.garrison` until the box breaks. Prefixes: [DAMAGE.md](DAMAGE.md), [DELIVERY.md](DELIVERY.md).
+
+`power.none` is not a placeable. Skip it.
+
+| id | arm | dmg | del |
+| --- | --- | --- | --- |
+| `build.dozer` | `arm.light` | — | — |
+| `build.worker` | `arm.infantry` | — | — |
+| `eco.dropoff` | `arm.structure` | — | — |
+| `eco.stash` | `arm.structure` | — | — |
+| `eco.drop_pad` | `arm.structure` | — | — |
+| `eco.internet` | `arm.structure` | — | — |
+| `eco.black_market` | `arm.structure` | — | — |
+| `eco.chinook` | `arm.air` | — | — |
+| `eco.truck` | `arm.light` | — | — |
+| `eco.hacker` | `arm.infantry` | — | — |
+| `power.fusion` | `arm.structure` | — | — |
+| `power.reactor` | `arm.structure` | — | — |
+| `prod.command` | `arm.structure` | — | — |
+| `prod.barracks` | `arm.structure` | — | — |
+| `prod.factory` | `arm.structure` | — | — |
+| `prod.arms` | `arm.structure` | — | — |
+| `prod.airfield` | `arm.structure` | — | — |
+| `prod.tech.aegis` | `arm.structure` | — | — |
+| `prod.tech.forge` | `arm.structure` | — | — |
+| `prod.tech.veil` | `arm.structure` | — | — |
+| `prod.detention` | `arm.structure` | — | — |
+| `def.patriot` | `arm.structure` | `dmg.rocket` | `del.missile` |
+| `def.firebase` | `arm.structure` | `dmg.cannon` | `del.arc` |
+| `def.gatling` | `arm.structure` | `dmg.small` | `del.instant` |
+| `def.bunker` | `arm.structure` | — | — |
+| `def.speaker` | `arm.structure` | — | — |
+| `def.stinger` | `arm.structure` | `dmg.rocket` | `del.missile` |
+| `def.tunnel` | `arm.structure` | `dmg.small` | `del.instant` |
+| `def.trap` | `arm.structure` | `dmg.explosive` | `del.melee` |
+| `def.fake` | `arm.structure` | — | — |
+| `inf.rifle` | `arm.infantry` | `dmg.small` | `del.instant` |
+| `inf.rocket` | `arm.infantry` | `dmg.rocket` | `del.missile` |
+| `inf.sniper` | `arm.infantry` | `dmg.sniper` | `del.instant` |
+| `inf.suicide` | `arm.infantry` | `dmg.explosive` | `del.melee` |
+| `inf.mob` | `arm.infantry` | `dmg.small` | `del.instant` |
+| `inf.hijack` | `arm.infantry` | — | — |
+| `inf.saboteur` | `arm.infantry` | — | — |
+| `inf.minigun` | `arm.infantry` | `dmg.small` | `del.instant` |
+| `inf.toxin_rifle` | `arm.infantry` | `dmg.toxin` | `del.instant` |
+| `inf.pilot` | `arm.infantry` | — | — |
+| `hero.demo_stealth` | `arm.infantry` | `dmg.small` | `del.instant` |
+| `hero.capture` | `arm.infantry` | — | — |
+| `hero.sniper` | `arm.infantry` | `dmg.sniper` | `del.instant` |
+| `veh.scout_gun` | `arm.light` | `dmg.small` | `del.instant` |
+| `veh.ambulance` | `arm.light` | — | — |
+| `veh.technical` | `arm.light` | `dmg.small` | `del.instant` |
+| `veh.buggy` | `arm.light` | `dmg.rocket` | `del.missile` |
+| `veh.quad` | `arm.light` | `dmg.small` | `del.instant` |
+| `veh.toxin_spray` | `arm.light` | `dmg.toxin` | `del.spray` |
+| `veh.radar` | `arm.light` | — | — |
+| `veh.cycle` | `arm.light` | — | — |
+| `veh.bus` | `arm.light` | — | — |
+| `veh.listening` | `arm.light` | `dmg.rocket` | `del.missile` |
+| `veh.ecm` | `arm.tank` | — | — |
+| `veh.microwave` | `arm.tank` | `dmg.microwave` | `del.spray` |
+| `veh.avenger` | `arm.light` | `dmg.laser` | `del.beam` |
+| `veh.sentry` | `arm.light` | — | — |
+| `veh.crawler` | `arm.light` | — | — |
+| `armor.basic` | `arm.tank` | `dmg.cannon` | `del.instant` |
+| `armor.elite` | `arm.tank` | `dmg.cannon` | `del.instant` |
+| `armor.laser` | `arm.tank` | `dmg.laser` | `del.beam` |
+| `armor.marauder` | `arm.tank` | `dmg.cannon` | `del.instant` |
+| `armor.flame` | `arm.tank` | `dmg.flame` | `del.spray` |
+| `armor.gatling` | `arm.tank` | `dmg.small` | `del.instant` |
+| `armor.mammoth` | `arm.tank` | `dmg.cannon` | `del.instant` |
+| `armor.emperor` | `arm.tank` | `dmg.cannon` | `del.instant` |
+| `arty.missile` | `arm.arty` | `dmg.rocket` | `del.missile` |
+| `arty.napalm` | `arm.arty` | `dmg.flame` | `del.arc` |
+| `arty.tacnuke` | `arm.arty` | `dmg.rad` | `del.arc` |
+| `arty.scud` | `arm.arty` | `dmg.explosive` | `del.missile` |
+| `air.fighter` | `arm.air` | `dmg.rocket` | `del.missile` |
+| `air.king` | `arm.air` | `dmg.rocket` | `del.missile` |
+| `air.stealth` | `arm.air` | `dmg.rocket` | `del.missile` |
+| `air.bomber` | `arm.air` | `dmg.explosive` | `del.drop` |
+| `air.alpha` | `arm.air` | `dmg.explosive` | `del.drop` |
+| `air.heli` | `arm.air` | `dmg.small` | `del.instant` |
+| `air.combat_chinook` | `arm.air` | `dmg.small` | `del.instant` |
+| `air.mig` | `arm.air` | `dmg.flame` | `del.drop` |
+| `air.helix` | `arm.air` | `dmg.small` | `del.instant` |
+| `deceive.bomb_truck` | `arm.light` | `dmg.explosive` | `del.melee` |
+| `sw.beam` | `arm.structure` | `dmg.laser` | `del.beam` |
+| `sw.nuke` | `arm.structure` | `dmg.rad` | `del.arc` |
+| `sw.storm` | `arm.structure` | `dmg.explosive` | `del.missile` |
+| `map.dock` | — | — | — |
+| `map.pile` | — | — | — |
+| `map.oil` | `arm.structure` | — | — |
+| `map.refinery` | `arm.structure` | — | — |
+| `map.hospital` | `arm.structure` | — | — |
+| `map.garrison` | `arm.garrison` | — | — |
+| `map.car` | `arm.light` | — | — |
+| `map.crate` | — | — | — |
+| `map.repair_bay` | `arm.structure` | — | — |
+| `map.repair_pad` | `arm.structure` | — | — |
+| `map.arty_plat` | `arm.structure` | `dmg.cannon` | `del.arc` |
+| `map.reinforce` | `arm.structure` | — | — |
+
+Indestructible: `map.dock` (and usually `map.pile` as a resource, not a hull).
+
+Second weapons (not a second id):
+
+| id | extra |
+| --- | --- |
+| `veh.scout_gun` | `up.tow` adds `dmg.rocket` / `del.missile` |
+| `armor.elite` | `ab.pdl` is `dmg.intercept`, not the main gun |
+| `veh.avenger` | Also eats missiles (`dmg.intercept`) |
+| `air.heli` | `up.pods` adds `dmg.rocket` / `del.missile` |
+| `veh.sentry` | `up.sentry_gun` adds `dmg.small` / `del.instant` |
+| `veh.cycle` | Inherits rider weapon |
+| `arty.scud` | Toxin toggle → `dmg.toxin` |
+| `deceive.bomb_truck` | Bio payload → `dmg.toxin` |
+| `sw.storm` | Anthrax fattens toxin; still not interceptable |
+| Occupied bunker / firebase / palace / bus | Occupants shoot; hull stays `arm.structure` until `arm.garrison` rules apply |
 
 ---
 

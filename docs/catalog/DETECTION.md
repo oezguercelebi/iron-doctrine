@@ -2,6 +2,8 @@
 
 Who is invisible, who sees them. Vs Veil this is the game.
 
+Ordinary shroud / fog / LOS / radar: [SIGHT.md](SIGHT.md). This file is stealth only.
+
 ---
 
 ## Stealth kinds

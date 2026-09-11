@@ -14,12 +14,13 @@ This folder is phase 0. Nothing below is scheduled.
 
 Catalog: [docs/catalog/](catalog/README.md).
 
+- Schema, invariants, factions (our names)
 - Systems, roles, abilities, statuses, tech tree
-- Detection, damage×armor, terrain
-- HUD, match settings, AI jobs, announcer events
+- Detection, sight (fog/radar), damage×armor, delivery
+- Teams, HUD, match settings, AI jobs, announcer events
 - Map grammar for 2–8 players; skirmish map roster
 - 12 loadouts as deltas
-- Slice-1 filters on each sheet
+- Slice-1 as one filter sheet; combat join on every role
 
 Numbers, product names, and drawn map geometry are still later. The map *roster* (2–8 players) is catalogued.
 

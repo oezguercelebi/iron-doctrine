@@ -57,7 +57,7 @@ Factions and the full map roster stay in the catalog so we do not design a 1v1-o
 - Using EA names, maps, models, audio, or data files.
 - Forking the 2025 GPL source drop of *Generals / Zero Hour* as this product. That code is a study reference at most. This game is original.
 - A story campaign in the first several slices.
-- Balance numbers and product names until a later pass. Role catalog lives in `docs/catalog/`.
+- Balance numbers and product names until a later pass. Role catalog lives in `docs/catalog/`. Agent entry: `AGENTS.md` and `docs/catalog/SLICE.md`.
 
 ## Tone
 

@@ -1,6 +1,6 @@
 # Mechanics (grouped)
 
-The sim. If a system is not in this file, it is not in the game.
+The sim index. If a system is not in **this catalog**, it is not in the game. Other sheets name the rows. Doctrines: [FACTIONS.md](FACTIONS.md). Ids: [SCHEMA.md](SCHEMA.md). Never-invent: [INVARIANTS.md](INVARIANTS.md).
 
 Sides: **Aegis** (USA analog), **Forge** (China analog), **Veil** (GLA analog).
 
@@ -48,7 +48,7 @@ No StarCraft-style attack/defend/hold stances. Artillery that must unpack (Forge
 - **Veil:** cheap worker. Builds *and* harvests. Many workers = many buildings at once.
 - Place anywhere with space (and, for Aegis/Forge, eventual power to *run* it). Forward bases are legal.
 - Ghost is blocked by terrain, other buildings, and steep cliffs unless a role says it can climb (Veil saboteur analog).
-- Builders can be killed. Incomplete building is lost or left as a husk — pick one rule at slice-1 and keep it. Source: incomplete is lost.
+- Builders can be killed. **Incomplete building is lost.** No husk. Locked.
 
 ## 4. Economy
 
@@ -158,6 +158,7 @@ Three ranks: Veteran → Elite → Heroic.
 - Stealth: snipers, heroes, Veil camo, disguised bomb truck, fake buildings, stealth air, Kassad-style almost-everything.
 - Detection: Aegis drones / pathfinders / sentry; Forge troop crawler / listening outpost; Veil radar van.
 - A match vs Veil without detection is a different game. Detection is a role, not a nice-to-have.
+- Ordinary sight (shroud, fog, LOS, radar): [SIGHT.md](SIGHT.md). Allies: [TEAMS.md](TEAMS.md). How shots travel: [DELIVERY.md](DELIVERY.md).
 
 ## 12. Commander promotion
 
@@ -245,4 +246,16 @@ See [MAP_GRAMMAR.md](MAP_GRAMMAR.md) and [MAPS.md](MAPS.md).
 
 Vanilla three sides, plus a 3×3 specialist grid (Zero Hour). 12 playable. Boss mix is AI-only later.
 
-A specialist is **buffs, a unique toy, and a hole**. See ROLES.md loadout grid.
+A specialist is **buffs, a unique toy, and a hole**. See ROLES.md loadout grid and [FACTIONS.md](FACTIONS.md).
+
+## 19. Sight
+
+Shroud, fog, LOS, radar. [SIGHT.md](SIGHT.md). Stealth stays group 11 + [DETECTION.md](DETECTION.md).
+
+## 20. Teams
+
+Slots, allies, friendly fire, what is not shared. [TEAMS.md](TEAMS.md).
+
+## 21. Delivery
+
+How a shot travels (instant, missile, beam, spray, …). [DELIVERY.md](DELIVERY.md). Damage × armor: [DAMAGE.md](DAMAGE.md). Per-id join: ROLES combat join.

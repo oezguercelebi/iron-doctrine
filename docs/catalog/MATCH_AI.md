@@ -2,6 +2,8 @@
 
 First product is local vs computer. This is that catalog.
 
+Ally / FF / what is not shared: [TEAMS.md](TEAMS.md). First-match filter: [SLICE.md](SLICE.md).
+
 ---
 
 ## Modes

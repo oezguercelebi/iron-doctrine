@@ -24,7 +24,7 @@ No login. No lobby server. LAN screen later, host/join on the LAN.
 | --- | --- | --- |
 | `hud.money` | Credits | Cash |
 | `hud.power` | Power meter | Aegis / Forge only. Current vs drain. Hidden for Veil |
-| `hud.minimap` | Radar | Terrain + detected. Off if no radar / low power / no van |
+| `hud.minimap` | Radar | Terrain + detected. Off if no radar / low power / no van. Rules: [SIGHT.md](SIGHT.md) |
 | `hud.selection` | Portrait | HP, vet chevrons, passenger count, one addon slot |
 | `hud.command` | Command bar | Context buttons for the selection (build, train, ability, sell) |
 | `hud.generals` | Star button | Opens promotion window. Shows unspent points |

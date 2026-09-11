@@ -26,6 +26,23 @@ public static class SubmissionTiming
         if (match.Tick != before.Tick + 1 || after.Entities.Single(e => e.Id == dozer.Id).Position == dozer.Position)
             throw new InvalidOperationException("Submission timing: queued move did not progress on the next Step.");
         if (JsonSerializer.Serialize(before) != serialized) throw new InvalidOperationException("Submission timing: snapshot was not detached.");
+        var construction = factory.Create(config, config.CreateSetup());
+        var buildBefore = construction.Snapshot(0);
+        var buildJson = JsonSerializer.Serialize(buildBefore);
+        var builder = buildBefore.Entities.Single(e => e.OwnerSlot == 0 && e.RoleId == "build.dozer");
+        var build = construction.Submit(new MatchOrder(0, OrderKind.Build, new[] { builder.Id }, Position: new WorldPoint(3300, 4500), ProductId: "power.fusion"));
+        if (!build.Accepted) throw new InvalidOperationException("Submission timing: legal construction rejected.");
+        var justSubmitted = construction.Snapshot(0);
+        if (JsonSerializer.Serialize(justSubmitted) != buildJson || construction.Tick != buildBefore.Tick || justSubmitted.Player.Money != buildBefore.Player.Money || justSubmitted.Entities.Length != buildBefore.Entities.Length)
+            throw new InvalidOperationException("Submission timing: Build changed cash, entities, or gameplay before Step.");
+        construction.Step();
+        var buildAfter = construction.Snapshot(0);
+        if (construction.Tick != buildBefore.Tick + 1 || buildAfter.Entities.Single(e => e.Id == builder.Id).Position == builder.Position)
+            throw new InvalidOperationException("Submission timing: construction approach did not advance on the next Step.");
+        for (var i = 0; i < config.Role("power.fusion").BuildTicks + config.Rules.TickRate * 10; i++) construction.Step();
+        var complete = construction.Snapshot(0);
+        if (!complete.Entities.Any(e => e.RoleId == "power.fusion" && e.OwnerSlot == 0 && e.Completed) || complete.Player.Money != config.Rules.StartingCash - config.Role("power.fusion").Cost)
+            throw new InvalidOperationException("Submission timing: construction must complete with exactly one debit.");
         Console.WriteLine("PASS submission timing: Submit leaves gameplay unchanged; next Step executes detached order.");
     }
 }

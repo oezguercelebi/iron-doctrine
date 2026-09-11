@@ -71,7 +71,7 @@ Fan-out: search, map, and independent lanes first; you synthesise. Do not pull f
 - No HP, cost, build time, range, or XP numbers in the catalog. Those are a later pass. A build case may put **placeholder** numbers in one data file, labeled as such, slice ids only.
 - Working faction names (Aegis, Forge, Veil) are placeholders. Commander *product* names are not chosen. Ids (`aegis.air`, …) are stable.
 - The sim is a **match** (slots, orders, one clock) even when only 1 vs computer is built.
-- Stack is not chosen until a case picks from [`docs/CONSTRAINTS.md`](docs/CONSTRAINTS.md). Keep sim separable from renderer. Default if the case says pick: Godot 4.
+- Stack is locked in [`docs/CONSTRAINTS.md`](docs/CONSTRAINTS.md): Godot **4.8 .NET**, tick sim (not `Node`), glTF view, later lockstep over ENet. Until 4.8 stable, **4.7.2** is allowed. Do not pick Unreal as the match. Do not add PlayFab / UGS / Photon / EOS. A child that puts the match in scene replication has left the game.
 
 ## Never
 

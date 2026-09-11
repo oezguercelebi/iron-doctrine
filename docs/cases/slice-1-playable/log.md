@@ -37,3 +37,6 @@ Art b110c4a passed lane check: 53 paths, assets/** and tools/art/** only. Merged
 
 ## 2026-09-12 import and simulation proof progress
 Godot 4.7.2 imported all 15 GLBs successfully. This intermediate editor import reports missing scenes/Main.tscn (client lane not yet merged), so it is not a runtime pass. Raw intermediate output retained as proof/godot-art-import.txt. Lead owns generated .glb.import and shared-script .uid metadata on main; tests/.gdignore excludes .NET proof source from Godot import/export. Sim reports both frozen seam and supplemental timing proof green with real factory; substantive regression/full match proof still in progress.
+
+## 2026-09-12 approvals
+Fresh R contract-final APPROVE at pre-implementation gate: source pinning, FileAccess, supplemental invocation and Build timing addressed. Historical red is correctly not current runtime proof. R art APPROVE for art range: distinct original geometry, catalog mappings and lane boundaries conform; 15/15 Blender imports. Runtime consumption/team tint/rotors remain integration checks. Native .blend reopen/equivalence is a nonblocking proof gap; GLB runtime import is authoritative for this slice. Both full verdicts retained in reviews/.

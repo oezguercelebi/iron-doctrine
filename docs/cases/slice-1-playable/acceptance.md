@@ -6,7 +6,7 @@ Implementation and manual proof are complete; post-patch integrated run and fres
 | --- | --- |
 | Eight-slot/team/loadout model; two filled | Frozen SeamConformance; MechanicsProof eight-slot teams; proof/scope-check.txt |
 | Single tick/order list; detached deterministic state | Plain .NET executable; SubmissionTiming; paired full state hashes including AI/fog/pending orders |
-| Command+Dozer boot; army wipe recoverable; elimination/resign | Seam and elimination regressions; first visible victory; manual-resign.png |
+| Command+Dozer boot; army wipe recoverable; elimination/resign | Seam and elimination regressions; first visible victory; manual-resign.jpg |
 | Dozer building, legal placement, builder death loses incomplete | Construction proof; R1 embedded-builder/blocked-route regressions; mouse Fusion construction |
 | Finite docks, exclusive loader, owner-only return, free first gatherer | Economy and R1 stranded-final-cargo regressions; visible match gathering |
 | Low power disables defenses/radar; radar never grants vision | Power/intel proof; reviewed HUD gating |

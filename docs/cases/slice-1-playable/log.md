@@ -70,3 +70,6 @@ Fresh R found two correctness issues: P2 MatchClient:378 Build leaked picked tar
 
 ## 2026-09-12 sim patch1 merged and R dispatched
 Sim d935dc3 lane check passes: five src/Sim files, Program invocation and new ReviewRegressionProof only. Merged a47ae35; full main proof passes, including all five R regression scenarios. Full paired match defeats player at2192, hash C22B028182E524DEE442193CE933D104F4988477B59CFAB43F429AEF3141AB73. Fresh R sim-r1 dispatched with raw main proof; frozen tests/contracts/manifests unchanged. Worktree removed after merge.
+
+## 2026-09-12 evidence import hygiene
+Client patch2 import uncovered that Computer Use screenshot files returned JPEG bytes despite their .png filenames. Lead corrected only the six manual screenshot extensions and references to .jpg, and excluded docs/ from Godot resource import with .gdignore. No image contents or gameplay changed. Final import will verify the correction.

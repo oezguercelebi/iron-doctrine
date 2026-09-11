@@ -1,0 +1,3 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  IronDoctrine -> /Users/oezguercelebi/GitHub/iron-doctrine/.godot/mono/temp/bin/Debug/IronDoctrine.dll

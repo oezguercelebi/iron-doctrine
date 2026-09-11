@@ -381,7 +381,7 @@ public partial class MatchClient : Node3D
 
     private bool Submit(OrderKind kind, int[] actors, int target = 0, WorldPoint position = default, string product = "", bool append = false, int queueIndex = 0)
     {
-        var receipt = _match.Submit(new MatchOrder(_slot, kind, actors, target, position, product, append, queueIndex));
+        var receipt = _match.Submit(CommandIntent.Create(_slot, kind, actors, target, position, product, append, queueIndex));
         if (!receipt.Accepted) { Notify(receipt.Reason); _audio.Notify("sfx.invalid"); return false; }
         if (kind is OrderKind.Move or OrderKind.AttackMove or OrderKind.Guard or OrderKind.Waypoint or OrderKind.Rally or OrderKind.Build or OrderKind.Exit) _field.MarkOrder(position, new Color("84d6c1"));
         Notify(kind == OrderKind.Queue ? $"Queued {_match.Config.Role(product).Label}." : kind == OrderKind.Build ? $"Constructing {_match.Config.Role(product).Label}." : kind == OrderKind.CancelQueue ? "Queue item cancelled." : kind + " order issued.");

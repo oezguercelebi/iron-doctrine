@@ -4,7 +4,9 @@
 
 The client takes one detached snapshot after **every** fixed simulation step and consumes its current-tick events before advancing again. Selection, camera, control groups, interpolation, UI and sound remain presentation state. The battlefield loads each role's configured glTF resource directly, replaces its `team_color` material per owner, and respects snapshot visibility. Radar does not reveal terrain or hidden units.
 
-Enemy facing follows successive visible positions. Enemy combat feedback uses visible health changes and public activity transitions; it never reads redacted enemy destinations or targets or invents shot endpoints. Private order targets are used only for the viewer's own instant-fire tracers. A disabled radar suppresses live minimap entity blips, including selected units.
+Enemy facing follows successive visible positions. Enemy combat feedback uses visible health changes; it never reads redacted enemy activity, destinations or targets or invents shot endpoints. Private order targets are used only for the viewer's own instant-fire tracers. A disabled radar suppresses live minimap entity blips, including selected units. For non-owned selections, activity and passengers/cargo are shown as unknown; private XP and progress are omitted instead of displaying redacted defaults as facts.
+
+Ground-point orders (Build, Move, Attack-move, Guard, Waypoint, Rally and Exit) discard the hovered entity ID before submission, preserving the requested ground coordinate. Attack, Force-attack, Repair, Gather, Enter and Capture retain deliberate entity targets.
 
 ## Controls
 
@@ -42,3 +44,9 @@ After the Godot argument separator, use `--proof-play` to drive ordinary **playe
 The start marker is `PROOF_PLAY_STARTED`. A finished game emits `PROOF_PLAY_FINISHED tick=… result=victory|defeat orders=… models=…`. The screenshot path and save result are printed separately as `PROOF_SCREENSHOT`. Headless mode emits the outcome but cannot produce a rendered screenshot.
 
 `CLIENT_READY` reports the viewer slot, snapshot count and successfully loaded model resources. A missing asset produces a warning and a selectable footprint while import is pending; final builds must have all original glTF resources imported.
+
+## Focused client input proof
+
+Run `bash src/Client/Proof/run.sh` from the repository root. Set `IRON_DOTNET` to a .NET 8 executable if it is not installed on the path or under the repository's `.tools`. The runner creates and removes a disposable .NET project; it does not change the game project or tuning. `ClientInputProof.cs` is excluded from the game by a compilation symbol.
+
+The proof links the production command/intel helpers and the actual simulation. It submits Build with a nearby picked unit, then verifies the created building matches the approved ghost point. It covers the analogous ground modes, preserved entity targets, enemy redacted activity/passengers/cargo/XP, and retained own-unit details. This is an order/data regression check; manual mouse/HUD interactions remain a separate proof.

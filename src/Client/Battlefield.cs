@@ -238,8 +238,6 @@ public partial class Battlefield : Node3D
                 var movement = ToWorld(entity.Position) - ToWorld(view.State.Position);
                 if (movement.LengthSquared() > .0001f) view.ObservedHeading = movement.Normalized();
                 if (view.State.Hp > entity.Hp) Pulse(ToWorld(entity.Position) + Vector3.Up, new Color("ffb95e"), .5f);
-                if (entity.OwnerSlot != snapshot.ViewerSlot && entity.Activity == EntityActivity.Attacking && view.State.Activity != EntityActivity.Attacking)
-                    Pulse(ToWorld(entity.Position) + Vector3.Up, new Color("ffeeb5"), .3f);
             }
             view.State = entity;
             view.Desired = ToWorld(entity.Position) + Vector3.Up * (role.IsFlying ? 3.1f : 0);

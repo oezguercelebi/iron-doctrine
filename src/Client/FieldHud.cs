@@ -210,20 +210,19 @@ public partial class FieldHud : Control
         Text(new Vector2(x, y + 55), chosen.Length == 1 ? role.Label : $"{chosen.Length} units selected", 23, _ink);
         bool own = first.OwnerSlot == Snapshot.ViewerSlot;
         string affiliation = own ? "YOUR FORCE" : first.OwnerSlot < 0 ? "NEUTRAL" : "CONTACT";
-        Text(new Vector2(x, y + 76), affiliation + (first.IsRemembered ? "  /  LAST SEEN" : "  /  " + first.Activity.ToString().ToUpperInvariant()), 10, own ? _accent : _amber);
+        Text(new Vector2(x, y + 76), affiliation + "  /  " + SelectionIntel.Status(first, Snapshot.ViewerSlot), 10, own ? _accent : _amber);
         int hp = chosen.Sum(e => e.Hp), max = chosen.Sum(e => e.MaxHp);
         Bar(new Rect2(x, y + 89, 261, 7), max == 0 ? 0 : (float)hp / max, _accent);
         Text(new Vector2(x, y + 115), $"{hp:N0} / {max:N0} integrity", 13, _ink);
-        string rank = first.VeterancyRank switch { 1 => "›  VETERAN", 2 => "››  ELITE", 3 => "›››  HEROIC", _ => "UNRANKED" };
-        if (!role.IsBuilding) Text(new Vector2(x, y + 137), rank + $"  ·  {first.Experience} XP", 11, _amber);
+        if (!role.IsBuilding) Text(new Vector2(x, y + 137), SelectionIntel.Veterancy(first, Snapshot.ViewerSlot), 11, _amber);
         if (first.RoleId == "map.dock") Text(new Vector2(x, y + 140), $"Supplies remaining  {first.SuppliesLeft:N0}", 13, _amber);
-        else if (role.Capacity > 0) Text(new Vector2(x, y + 155), $"Passengers  {first.OccupantIds.Length}/{role.Capacity}" + (role.CargoCapacity > 0 ? $"  ·  Cargo ${first.Cargo}" : ""), 12, _muted);
+        else if (role.Capacity > 0) Text(new Vector2(x, y + 155), SelectionIntel.Passengers(first, role, Snapshot.ViewerSlot), 12, _muted);
         if (!first.Completed)
         {
             Text(new Vector2(x, y + 148), "UNDER CONSTRUCTION", 11, _amber);
-            Bar(new Rect2(x, y + 160, 261, 5), 1 - (float)first.BuildTicksLeft / Math.Max(1, first.BuildTicksTotal), _amber);
+            if (own) Bar(new Rect2(x, y + 160, 261, 5), 1 - (float)first.BuildTicksLeft / Math.Max(1, first.BuildTicksTotal), _amber);
         }
-        if (first.CaptureTicksTotal > 0 && first.CaptureTicksLeft > 0)
+        if (own && first.CaptureTicksTotal > 0 && first.CaptureTicksLeft > 0)
         {
             Text(new Vector2(x, y + 154), "CAPTURING", 11, _amber);
             Bar(new Rect2(x, y + 162, 261, 5), 1 - (float)first.CaptureTicksLeft / first.CaptureTicksTotal, _amber);
@@ -325,7 +324,7 @@ public partial class FieldHud : Control
             var color = Field.TeamColor(entity.OwnerSlot);
             float width = role.IsBuilding ? 64 : 38;
             Bar(new Rect2(screen.X - width / 2, screen.Y, width, 4), (float)entity.Hp / Math.Max(1, entity.MaxHp), color);
-            if (!entity.Completed) Bar(new Rect2(screen.X - width / 2, screen.Y + 6, width, 3), 1 - (float)entity.BuildTicksLeft / Math.Max(1, entity.BuildTicksTotal), _amber);
+            if (!entity.Completed && entity.OwnerSlot == Snapshot.ViewerSlot) Bar(new Rect2(screen.X - width / 2, screen.Y + 6, width, 3), 1 - (float)entity.BuildTicksLeft / Math.Max(1, entity.BuildTicksTotal), _amber);
             if (entity.VeterancyRank > 0) Text(screen + new Vector2(-9, -7), new string('›', entity.VeterancyRank), 18, _amber);
             if (Hovered?.Id == entity.Id) Text(screen + new Vector2(-width / 2, -9), role.Label, 12, _ink);
         }

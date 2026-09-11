@@ -1,6 +1,6 @@
 # Roadmap
 
-This folder is phase 0. Nothing below is scheduled.
+This folder is phase 0–2. First playable is next. Nothing below that is scheduled.
 
 ## 0. This repo (done)
 
@@ -24,9 +24,9 @@ Catalog: [docs/catalog/](catalog/README.md).
 
 Numbers, product names, and drawn map geometry are still later. The map *roster* (2–8 players) is catalogued.
 
-## 2. Stack decision
+## 2. Stack decision (done)
 
-One page: engine, language, 2D vs 3D, how the sim ticks. Then the first playable can start.
+Godot **4.8 .NET**, top-down 3D. Sim is a tick + orders, not `Node`. View is glTF. Later MP is lockstep LAN/P2P over ENet, no backend. Until 4.8 stable, 4.7.2 is allowed. See [CONSTRAINTS.md](CONSTRAINTS.md).
 
 ## 3. First playable — 1 vs computer
 

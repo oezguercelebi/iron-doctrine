@@ -1,6 +1,6 @@
 status: building
-lanes: contract building; art building; sim/client pending contract
+lanes: contract done; art building; sim building; client building
 parent: —
 blocked: —
-provisional: Godot 4.7.2; optional AA link skipped; original procedural Blender meshes
-next: freeze contract, then fan out simulation and client
+provisional: Godot 4.7.2; optional AA link skipped; original procedural Blender meshes; tool-free independent R adaptation
+next: merge completed lanes; run proof and independent review

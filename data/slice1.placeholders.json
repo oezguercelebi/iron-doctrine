@@ -1,0 +1,630 @@
+{
+  "notice": "All gameplay numbers in this file are provisional slice-1 PLACEHOLDER tuning, not catalog balance.",
+  "defaultSeed": 271828,
+  "defaultSlots": [
+    {
+      "index": 0,
+      "occupant": "Player",
+      "team": 1,
+      "loadoutId": "aegis.vanilla",
+      "color": "#58B9EF",
+      "aiId": "ai.medium"
+    },
+    {
+      "index": 1,
+      "occupant": "AI",
+      "team": 2,
+      "loadoutId": "aegis.vanilla",
+      "color": "#E87A50",
+      "aiId": "ai.medium"
+    },
+    {
+      "index": 2,
+      "occupant": "Closed",
+      "team": 0,
+      "loadoutId": "aegis.vanilla",
+      "color": "#A7CF62",
+      "aiId": "ai.medium"
+    },
+    {
+      "index": 3,
+      "occupant": "Closed",
+      "team": 0,
+      "loadoutId": "aegis.vanilla",
+      "color": "#CBA7E5",
+      "aiId": "ai.medium"
+    },
+    {
+      "index": 4,
+      "occupant": "Closed",
+      "team": 0,
+      "loadoutId": "aegis.vanilla",
+      "color": "#F4D875",
+      "aiId": "ai.medium"
+    },
+    {
+      "index": 5,
+      "occupant": "Closed",
+      "team": 0,
+      "loadoutId": "aegis.vanilla",
+      "color": "#64D2C4",
+      "aiId": "ai.medium"
+    },
+    {
+      "index": 6,
+      "occupant": "Closed",
+      "team": 0,
+      "loadoutId": "aegis.vanilla",
+      "color": "#E995B5",
+      "aiId": "ai.medium"
+    },
+    {
+      "index": 7,
+      "occupant": "Closed",
+      "team": 0,
+      "loadoutId": "aegis.vanilla",
+      "color": "#CCCCCC",
+      "aiId": "ai.medium"
+    }
+  ],
+  "rules": {
+    "tickRate": 20,
+    "unitsPerWorldUnit": 100,
+    "startingCash": 6000,
+    "hardEntityCap": 1000,
+    "queueLimit": 20,
+    "sellRefundPercent": 50,
+    "queueRefundPercent": 100,
+    "constructionCancelRefundPercent": 0,
+    "interactionRange": 300,
+    "repairHpPerTick": 4,
+    "repairCostPerHp": 1,
+    "factoryRepairHpPerTick": 5,
+    "factoryRepairRange": 600,
+    "captureTicks": 160,
+    "gatherLoadTicks": 50,
+    "gatherUnloadTicks": 10,
+    "spawnOffset": 500,
+    "garrisonSpillHpPercent": 70,
+    "crushRadius": 125,
+    "missileHitRadius": 90,
+    "groundForceAttackRadius": 180,
+    "guardLeash": 1800,
+    "pathReplanTicks": 15,
+    "selfHealDelayTicks": 60
+  },
+  "ai": {
+    "thinkTicks": 15,
+    "attackGroupSize": 7,
+    "attackDelayTicks": 900,
+    "defendRadius": 2800,
+    "desiredGatherers": 2,
+    "buildSpacing": 900,
+    "placementSearchCells": 16,
+    "buildOrder": [
+      "power.fusion",
+      "eco.dropoff",
+      "prod.barracks",
+      "prod.factory",
+      "def.patriot",
+      "power.fusion"
+    ],
+    "composition": [
+      "inf.rifle",
+      "inf.rifle",
+      "inf.rocket",
+      "armor.basic",
+      "veh.scout_gun",
+      "inf.rocket",
+      "armor.basic"
+    ]
+  },
+  "roles": [
+    {
+      "id": "build.dozer",
+      "label": "Dozer",
+      "model": "res://assets/models/dozer.glb",
+      "hp": 500,
+      "cost": 500,
+      "buildTicks": 100,
+      "radius": 100,
+      "sightRange": 1800,
+      "armorId": "arm.light",
+      "killExperience": 100,
+      "speedPerTick": 24,
+      "producerId": "prod.command",
+      "abilityIds": [
+        "ab.build",
+        "ab.repair"
+      ]
+    },
+    {
+      "id": "prod.command",
+      "label": "Command",
+      "model": "res://assets/models/command.glb",
+      "hp": 3000,
+      "cost": 1500,
+      "buildTicks": 200,
+      "radius": 380,
+      "sightRange": 1800,
+      "armorId": "arm.structure",
+      "killExperience": 100,
+      "isBuilding": true,
+      "abilityIds": [
+        "ab.sell"
+      ]
+    },
+    {
+      "id": "power.fusion",
+      "label": "Fusion",
+      "model": "res://assets/models/fusion.glb",
+      "hp": 1800,
+      "cost": 600,
+      "buildTicks": 90,
+      "radius": 220,
+      "sightRange": 1800,
+      "armorId": "arm.structure",
+      "killExperience": 100,
+      "isBuilding": true,
+      "abilityIds": [
+        "ab.sell"
+      ],
+      "powerSupply": 20
+    },
+    {
+      "id": "eco.dropoff",
+      "label": "Drop-off",
+      "model": "res://assets/models/dropoff.glb",
+      "hp": 1800,
+      "cost": 800,
+      "buildTicks": 120,
+      "radius": 300,
+      "sightRange": 1800,
+      "armorId": "arm.structure",
+      "killExperience": 100,
+      "isBuilding": true,
+      "abilityIds": [
+        "ab.sell"
+      ],
+      "powerDrain": 3
+    },
+    {
+      "id": "prod.barracks",
+      "label": "Barracks",
+      "model": "res://assets/models/barracks.glb",
+      "hp": 1800,
+      "cost": 500,
+      "buildTicks": 100,
+      "radius": 250,
+      "sightRange": 1800,
+      "armorId": "arm.structure",
+      "killExperience": 100,
+      "isBuilding": true,
+      "abilityIds": [
+        "ab.sell"
+      ],
+      "powerDrain": 2
+    },
+    {
+      "id": "prod.factory",
+      "label": "Factory",
+      "model": "res://assets/models/factory.glb",
+      "hp": 1800,
+      "cost": 1000,
+      "buildTicks": 140,
+      "radius": 340,
+      "sightRange": 1800,
+      "armorId": "arm.structure",
+      "killExperience": 100,
+      "isBuilding": true,
+      "abilityIds": [
+        "ab.sell"
+      ],
+      "powerDrain": 5,
+      "prerequisites": [
+        "eco.dropoff"
+      ]
+    },
+    {
+      "id": "def.patriot",
+      "label": "AA turret",
+      "model": "res://assets/models/aa_turret.glb",
+      "hp": 1200,
+      "cost": 700,
+      "buildTicks": 100,
+      "radius": 160,
+      "sightRange": 1800,
+      "armorId": "arm.structure",
+      "killExperience": 100,
+      "isBuilding": true,
+      "abilityIds": [
+        "ab.sell"
+      ],
+      "powerDrain": 5,
+      "prerequisites": [
+        "power.fusion"
+      ],
+      "damageId": "dmg.rocket",
+      "deliveryId": "del.missile",
+      "damage": 75,
+      "attackRange": 2000,
+      "attackCooldownTicks": 24,
+      "projectileSpeedPerTick": 100
+    },
+    {
+      "id": "eco.chinook",
+      "label": "Gatherer",
+      "model": "res://assets/models/gatherer.glb",
+      "hp": 550,
+      "cost": 700,
+      "buildTicks": 100,
+      "radius": 180,
+      "sightRange": 1800,
+      "armorId": "arm.air",
+      "killExperience": 100,
+      "speedPerTick": 55,
+      "isFlying": true,
+      "producerId": "eco.dropoff",
+      "capacity": 8,
+      "cargoCapacity": 600,
+      "abilityIds": [
+        "ab.gather"
+      ]
+    },
+    {
+      "id": "inf.rifle",
+      "label": "Rifle",
+      "model": "res://assets/models/rifle.glb",
+      "hp": 100,
+      "cost": 150,
+      "buildTicks": 40,
+      "radius": 45,
+      "sightRange": 1800,
+      "armorId": "arm.infantry",
+      "killExperience": 100,
+      "speedPerTick": 20,
+      "isInfantry": true,
+      "producerId": "prod.barracks",
+      "damageId": "dmg.small",
+      "deliveryId": "del.instant",
+      "damage": 20,
+      "attackRange": 1150,
+      "attackCooldownTicks": 12,
+      "abilityIds": [
+        "ab.capture"
+      ]
+    },
+    {
+      "id": "inf.rocket",
+      "label": "Rocket",
+      "model": "res://assets/models/rocket.glb",
+      "hp": 110,
+      "cost": 225,
+      "buildTicks": 50,
+      "radius": 45,
+      "sightRange": 1800,
+      "armorId": "arm.infantry",
+      "killExperience": 100,
+      "speedPerTick": 18,
+      "isInfantry": true,
+      "producerId": "prod.barracks",
+      "damageId": "dmg.rocket",
+      "deliveryId": "del.missile",
+      "damage": 65,
+      "attackRange": 1400,
+      "attackCooldownTicks": 28,
+      "projectileSpeedPerTick": 90
+    },
+    {
+      "id": "armor.basic",
+      "label": "Tank",
+      "model": "res://assets/models/tank.glb",
+      "hp": 800,
+      "cost": 800,
+      "buildTicks": 110,
+      "radius": 120,
+      "sightRange": 1800,
+      "armorId": "arm.tank",
+      "killExperience": 300,
+      "speedPerTick": 25,
+      "producerId": "prod.factory",
+      "damageId": "dmg.cannon",
+      "deliveryId": "del.instant",
+      "damage": 90,
+      "attackRange": 1400,
+      "attackCooldownTicks": 22
+    },
+    {
+      "id": "veh.scout_gun",
+      "label": "Scout",
+      "model": "res://assets/models/scout.glb",
+      "hp": 450,
+      "cost": 500,
+      "buildTicks": 80,
+      "radius": 100,
+      "sightRange": 2300,
+      "armorId": "arm.light",
+      "killExperience": 200,
+      "speedPerTick": 35,
+      "producerId": "prod.factory",
+      "damageId": "dmg.small",
+      "deliveryId": "del.instant",
+      "damage": 28,
+      "attackRange": 1300,
+      "attackCooldownTicks": 8,
+      "capacity": 5,
+      "fireFromTransport": true
+    },
+    {
+      "id": "map.dock",
+      "label": "Supply dock",
+      "model": "res://assets/models/dock.glb",
+      "hp": 1,
+      "cost": 0,
+      "buildTicks": 0,
+      "radius": 280,
+      "sightRange": 0,
+      "armorId": "arm.structure",
+      "killExperience": 0,
+      "isNeutral": true,
+      "indestructible": true
+    },
+    {
+      "id": "map.garrison",
+      "label": "Garrison",
+      "model": "res://assets/models/garrison.glb",
+      "hp": 1400,
+      "cost": 0,
+      "buildTicks": 0,
+      "radius": 220,
+      "sightRange": 1900,
+      "armorId": "arm.structure",
+      "killExperience": 100,
+      "isBuilding": true,
+      "abilityIds": [],
+      "isNeutral": true,
+      "capacity": 8,
+      "fireFromTransport": true
+    },
+    {
+      "id": "up.capture",
+      "label": "Capture research",
+      "model": "",
+      "hp": 0,
+      "cost": 500,
+      "buildTicks": 140,
+      "producerId": "prod.barracks"
+    }
+  ],
+  "damage": [
+    {
+      "id": "dmg.small",
+      "armorPercent": {
+        "arm.infantry": 100,
+        "arm.light": 60,
+        "arm.tank": 10,
+        "arm.air": 10,
+        "arm.structure": 8,
+        "arm.garrison": 5
+      }
+    },
+    {
+      "id": "dmg.cannon",
+      "armorPercent": {
+        "arm.infantry": 50,
+        "arm.light": 100,
+        "arm.tank": 100,
+        "arm.air": 0,
+        "arm.structure": 100,
+        "arm.garrison": 15
+      }
+    },
+    {
+      "id": "dmg.rocket",
+      "armorPercent": {
+        "arm.infantry": 12,
+        "arm.light": 70,
+        "arm.tank": 100,
+        "arm.air": 100,
+        "arm.structure": 80,
+        "arm.garrison": 15
+      }
+    },
+    {
+      "id": "dmg.crush",
+      "armorPercent": {
+        "arm.infantry": 100,
+        "arm.light": 0,
+        "arm.tank": 0,
+        "arm.air": 0,
+        "arm.structure": 0,
+        "arm.garrison": 0
+      }
+    }
+  ],
+  "ranks": [
+    {
+      "experience": 0,
+      "damagePercent": 100,
+      "cooldownPercent": 100,
+      "hpPercent": 100,
+      "healHpPerTick": 0
+    },
+    {
+      "experience": 300,
+      "damagePercent": 120,
+      "cooldownPercent": 90,
+      "hpPercent": 120,
+      "healHpPerTick": 0
+    },
+    {
+      "experience": 800,
+      "damagePercent": 140,
+      "cooldownPercent": 80,
+      "hpPercent": 140,
+      "healHpPerTick": 1
+    },
+    {
+      "experience": 1600,
+      "damagePercent": 160,
+      "cooldownPercent": 70,
+      "hpPercent": 160,
+      "healHpPerTick": 2
+    }
+  ],
+  "map": {
+    "id": "maps.two_flats",
+    "layoutId": "layout.duel",
+    "maxPlayers": 2,
+    "widthCells": 120,
+    "heightCells": 80,
+    "cellSize": 100,
+    "starts": [
+      {
+        "slot": 0,
+        "command": {
+          "x": 1800,
+          "z": 4000
+        },
+        "builder": {
+          "x": 2200,
+          "z": 4600
+        }
+      },
+      {
+        "slot": 1,
+        "command": {
+          "x": 10200,
+          "z": 4000
+        },
+        "builder": {
+          "x": 9800,
+          "z": 3400
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "x": 6,
+        "z": 17,
+        "width": 28,
+        "height": 46,
+        "terrainId": "ter.start"
+      },
+      {
+        "x": 86,
+        "z": 17,
+        "width": 28,
+        "height": 46,
+        "terrainId": "ter.start"
+      },
+      {
+        "x": 47,
+        "z": 0,
+        "width": 9,
+        "height": 27,
+        "terrainId": "ter.unbuildable"
+      },
+      {
+        "x": 64,
+        "z": 53,
+        "width": 9,
+        "height": 27,
+        "terrainId": "ter.unbuildable"
+      },
+      {
+        "x": 43,
+        "z": 51,
+        "width": 9,
+        "height": 8,
+        "terrainId": "ter.unbuildable"
+      },
+      {
+        "x": 68,
+        "z": 21,
+        "width": 9,
+        "height": 8,
+        "terrainId": "ter.unbuildable"
+      }
+    ],
+    "objects": [
+      {
+        "roleId": "map.dock",
+        "position": {
+          "x": 3100,
+          "z": 2600
+        },
+        "supplies": 24000,
+        "tags": [
+          "tag.dock"
+        ]
+      },
+      {
+        "roleId": "map.dock",
+        "position": {
+          "x": 8900,
+          "z": 5400
+        },
+        "supplies": 24000,
+        "tags": [
+          "tag.dock"
+        ]
+      },
+      {
+        "roleId": "map.dock",
+        "position": {
+          "x": 6000,
+          "z": 4000
+        },
+        "supplies": 36000,
+        "tags": [
+          "tag.dock"
+        ]
+      },
+      {
+        "roleId": "map.garrison",
+        "position": {
+          "x": 3800,
+          "z": 3100
+        },
+        "supplies": 0,
+        "tags": [
+          "tag.garrisonable"
+        ]
+      },
+      {
+        "roleId": "map.garrison",
+        "position": {
+          "x": 8200,
+          "z": 4900
+        },
+        "supplies": 0,
+        "tags": [
+          "tag.garrisonable"
+        ]
+      },
+      {
+        "roleId": "map.garrison",
+        "position": {
+          "x": 5500,
+          "z": 3400
+        },
+        "supplies": 0,
+        "tags": [
+          "tag.garrisonable"
+        ]
+      },
+      {
+        "roleId": "map.garrison",
+        "position": {
+          "x": 6500,
+          "z": 4600
+        },
+        "supplies": 0,
+        "tags": [
+          "tag.garrisonable"
+        ]
+      }
+    ]
+  }
+}

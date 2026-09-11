@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+/Users/oezguercelebi/GitHub/iron-doctrine/tests/Program.cs(2,38): error CS0234: The type or namespace name 'Sim' does not exist in the namespace 'IronDoctrine' (are you missing an assembly reference?) [/Users/oezguercelebi/GitHub/iron-doctrine/tests/SimProof.csproj]
+
+Build FAILED.
+
+/Users/oezguercelebi/GitHub/iron-doctrine/tests/Program.cs(2,38): error CS0234: The type or namespace name 'Sim' does not exist in the namespace 'IronDoctrine' (are you missing an assembly reference?) [/Users/oezguercelebi/GitHub/iron-doctrine/tests/SimProof.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.87

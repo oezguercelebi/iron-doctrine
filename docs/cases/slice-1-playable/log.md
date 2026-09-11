@@ -40,3 +40,6 @@ Godot 4.7.2 imported all 15 GLBs successfully. This intermediate editor import r
 
 ## 2026-09-12 approvals
 Fresh R contract-final APPROVE at pre-implementation gate: source pinning, FileAccess, supplemental invocation and Build timing addressed. Historical red is correctly not current runtime proof. R art APPROVE for art range: distinct original geometry, catalog mappings and lane boundaries conform; 15/15 Blender imports. Runtime consumption/team tint/rotors remain integration checks. Native .blend reopen/equivalence is a nonblocking proof gap; GLB runtime import is authoritative for this slice. Both full verdicts retained in reviews/.
+
+## 2026-09-12 client build progress
+Client reports pinned Godot.NET.Sdk/4.7.2 build with zero warnings/errors. Public-order proof pilot supports --proof-play, --proof-output=<path>, --proof-quit and uniform --proof-speed=N; no sim-internal mutation. Actual integrated match remains pending. Lead launch wrappers pass shell syntax and reviewer harness parses; git diff --check clean.

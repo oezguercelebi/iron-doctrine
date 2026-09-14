@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+echo "HELPER_NOT_GUI src/Client/Proof/run.sh — CommandIntent/SelectionIntel only; no Godot mouse, HUD, or rendering"
 DOTNET_BIN="${IRON_DOTNET:-$ROOT/.tools/dotnet/dotnet}"
 if [ ! -x "$DOTNET_BIN" ]; then DOTNET_BIN="$(command -v dotnet)"; fi
 PROOF_DIR="$(mktemp -d "${TMPDIR:-/tmp}/iron-client-input-proof.XXXXXX")"

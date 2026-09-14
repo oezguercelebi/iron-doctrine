@@ -3,6 +3,7 @@ using IronDoctrine.Client;
 using IronDoctrine.Contracts;
 using IronDoctrine.Sim;
 
+Console.WriteLine("HELPER_NOT_GUI src/Client/Proof/run.sh — no Godot mouse, HUD, or rendering");
 var config = GameConfig.Load(args[0]);
 var factory = new MatchFactory();
 var match = factory.Create(config, config.CreateSetup());
@@ -56,8 +57,21 @@ var owned = new EntitySnapshot { OwnerSlot = 0, RoleId = "eco.chinook", Activity
 Require(SelectionIntel.Status(owned, 0) == "RETURNING", "Owned activity remains available.");
 Require(SelectionIntel.Passengers(owned, config.Role(owned.RoleId), 0).Contains($"2/{config.Role(owned.RoleId).Capacity}"), "Owned passenger counts remain available.");
 Require(SelectionIntel.Veterancy(owned, 0).Contains("300 XP"), "Owned experience remains available.");
+Require(SelectionIntel.OwnLive(owned, 0), "Own live entities expose private intel.");
 Console.WriteLine("PASS own private status, passenger count, cargo and XP remain available");
+var leaked = new EntitySnapshot
+{
+    Id = 41, OwnerSlot = 1, RoleId = "prod.barracks", Activity = EntityActivity.Building, VeterancyRank = 2, Experience = 400,
+    OccupantIds = new[] { 9 }, Cargo = 50, Queue = new[] { new QueueItemSnapshot("inf.rifle", 150, 1, 40) },
+    BuildTicksLeft = 9, BuildTicksTotal = 40, CaptureTicksLeft = 3, CaptureTicksTotal = 10, IsRemembered = true
+};
+Require(!SelectionIntel.OwnLive(leaked, 0), "Remembered enemy is not live own intel.");
+Require(SelectionIntel.Status(leaked, 0) == "LAST SEEN", "Fog-remembered activity must stay last-seen even if Activity is filled.");
+Require(!SelectionIntel.Veterancy(leaked, 0).Contains("XP"), "Fog-hidden XP must not display.");
+Require(SelectionIntel.Passengers(leaked, config.Role("veh.scout_gun"), 0).StartsWith("Passengers unknown"), "Fog-hidden occupants must not display as counts.");
+Console.WriteLine("PASS remembered/fog-hidden private fields stay redacted even if snapshot fields are populated");
 Console.WriteLine("CLIENT_R2_TARGETED_PROOF_OK");
+Console.WriteLine("HELPER_NOT_GUI_OK");
 
 static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
 

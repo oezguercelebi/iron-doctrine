@@ -21,14 +21,18 @@ internal sealed partial class Match
         }
         walkability[radius] = (topology, cells); return cells;
     }
-    private bool TerrainFits(WorldPoint p, int radius)
+    // Ground walk uses catalog GroundWalkable (ter.unbuildable is walkable). OOB / ter.block is not.
+    private bool TerrainFits(WorldPoint p, int radius) => FootprintFits(p, radius, C.Map.GroundWalkable);
+    // Placement uses CanBuildOn so unbuildable remains illegal to build.
+    private bool BuildFits(WorldPoint p, int radius) => FootprintFits(p, radius, C.Map.CanBuildOn);
+    private bool FootprintFits(WorldPoint p, int radius, Func<string, bool> cellOk)
     {
-        if (!InBounds(new WorldPoint(p.X - radius, p.Z - radius)) || !InBounds(new WorldPoint(p.X + radius, p.Z + radius))) return false;
+        if (!C.Map.InMap(new WorldPoint(p.X - radius, p.Z - radius)) || !C.Map.InMap(new WorldPoint(p.X + radius, p.Z + radius))) return false;
         int cell = C.Map.CellSize;
         for (int z = (p.Z - radius) / cell; z <= (p.Z + radius) / cell; z++)
             for (int x = (p.X - radius) / cell; x <= (p.X + radius) / cell; x++)
             {
-                if (C.Map.TerrainAt(x, z) != "ter.unbuildable") continue;
+                if (C.Map.InMap(x, z) && cellOk(C.Map.TerrainAt(x, z))) continue;
                 int nearX = Math.Clamp(p.X, x * cell, (x + 1) * cell), nearZ = Math.Clamp(p.Z, z * cell, (z + 1) * cell);
                 if (Near(p, new WorldPoint(nearX, nearZ), radius)) return false;
             }
@@ -112,7 +116,12 @@ internal sealed partial class Match
         var r = Role(body);
         if (r.SpeedPerTick <= 0) return TravelResult.Blocked;
         WorldPoint next;
-        if (r.IsFlying) next = Toward(body.Pos, target, r.SpeedPerTick);
+        if (r.IsFlying)
+        {
+            next = Toward(body.Pos, target, r.SpeedPerTick);
+            if (!C.Map.InMap(next) || !C.Map.AirWalkable(C.Map.TerrainAt(next.X / C.Map.CellSize, next.Z / C.Map.CellSize)))
+                return Near(body.Pos, target, range) ? TravelResult.Arrived : TravelResult.Blocked;
+        }
         else
         {
             if (body.PathWait > 0) { body.PathWait--; return TravelResult.Moving; }

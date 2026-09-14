@@ -14,7 +14,8 @@ internal static class BehaviorLog
 {
     public static bool Enabled { get; set; }
     public static readonly List<string> Lines = new();
-    public static int StuckEvents, OscillateEvents, FallbackEvents, BoxEvents;
+    public static readonly List<MovementDiagnostic> Diagnostics = new();
+    public static int WaitEvents, StuckEvents, OscillateEvents, FallbackEvents, BoxEvents;
     public static readonly Dictionary<string, int> Jobs = new(StringComparer.Ordinal);
 
     private static readonly Dictionary<int, Track> tracks = new();
@@ -23,13 +24,13 @@ internal static class BehaviorLog
         public WorldPoint Pos;
         public long DestAtWindow;
         public int Still, Flips, LastDx, LastDz, Samples;
-        public bool NotedStuck, NotedOsc;
+        public bool NotedWait, NotedStuck, NotedOsc;
     }
 
     public static void Reset()
     {
-        Lines.Clear(); tracks.Clear(); Jobs.Clear();
-        StuckEvents = OscillateEvents = FallbackEvents = BoxEvents = 0;
+        Lines.Clear(); tracks.Clear(); Jobs.Clear(); Diagnostics.Clear();
+        WaitEvents = StuckEvents = OscillateEvents = FallbackEvents = BoxEvents = 0;
     }
 
     public static void Note(long tick, string kind, string detail)
@@ -64,7 +65,7 @@ internal static class BehaviorLog
             if (role.IsBuilding || role.SpeedPerTick <= 0 || body.ContainerId != 0) continue;
             live.Add(body.Id);
             if (body.Activity == EntityActivity.Moving) moving++;
-            if (body.PathWait > 0) waiting++;
+            if (body.PathWait > 0 || body.Activity is EntityActivity.Waiting or EntityActivity.Loading) waiting++;
             if (body.PathFallback) fallback++;
             Watch(match, body, role);
         }
@@ -76,7 +77,7 @@ internal static class BehaviorLog
         }
         if (match.Tick > 0 && match.Tick % (match.C.Rules.TickRate * 10) == 0)
             Note(match.Tick, "summary",
-                $"moving={moving} waiting={waiting} fallback={fallback} stuck={StuckEvents} oscillate={OscillateEvents} box={BoxEvents} ai={string.Join(',', Jobs.Select(kv => kv.Key + ':' + kv.Value))}");
+                $"moving={moving} waiting={waiting} fallback={fallback} wait={WaitEvents} stuck={StuckEvents} oscillate={OscillateEvents} box={BoxEvents} ai={string.Join(',', Jobs.Select(kv => kv.Key + ':' + kv.Value))}");
     }
 
     private static void Watch(Match match, Match.Body body, RoleConfig role)
@@ -85,10 +86,26 @@ internal static class BehaviorLog
             tracks[body.Id] = track = new Track { Pos = body.Pos };
         int dx = Math.Sign(body.Pos.X - track.Pos.X), dz = Math.Sign(body.Pos.Z - track.Pos.Z);
         bool walking = body.Activity is EntityActivity.Moving or EntityActivity.Returning;
+        bool legitimateWait = body.PathWait > 0 || body.Activity is EntityActivity.Waiting or EntityActivity.Loading;
         long dest2 = Match.Distance2(body.Pos, body.Destination);
         bool arrived = dest2 <= (long)role.Radius * role.Radius * 4;
-        if (walking && body.Pos.Equals(track.Pos) && !arrived) track.Still++;
-        else track.Still = 0;
+        if (legitimateWait)
+        {
+            if (!track.NotedWait)
+            {
+                track.NotedWait = true;
+                WaitEvents++;
+                string reason = body.Activity is EntityActivity.Waiting or EntityActivity.Loading ? "dock.exclusive_loader" : "path.wait_blockers";
+                Diagnostics.Add(new MovementDiagnostic(body.Id, body.RoleId, body.Owner, MovementClassification.Wait, match.Tick, body.Pos, body.Destination, reason));
+                Note(match.Tick, "wait",
+                    $"id={body.Id} role={body.RoleId} slot={body.Owner} activity={body.Activity} wait={body.PathWait} reason={reason}");
+            }
+            track.Still = 0;
+            track.NotedStuck = false;
+        }
+        else track.NotedWait = false;
+        if (walking && !legitimateWait && body.Pos.Equals(track.Pos) && !arrived) track.Still++;
+        else if (!legitimateWait) track.Still = 0;
         if (walking && (dx != 0 || dz != 0) && track.Samples > 0 && (dx == -track.LastDx && dx != 0 || dz == -track.LastDz && dz != 0))
             track.Flips++;
         if (dx != 0 || dz != 0) { track.LastDx = dx; track.LastDz = dz; }
@@ -96,10 +113,11 @@ internal static class BehaviorLog
         track.Samples++;
         track.Pos = body.Pos;
         int hold = Math.Max(12, match.C.Rules.PathReplanTicks * 3);
-        if (walking && track.Still >= hold && !track.NotedStuck)
+        if (walking && !legitimateWait && track.Still >= hold && !track.NotedStuck)
         {
             track.NotedStuck = true;
             StuckEvents++;
+            Diagnostics.Add(new MovementDiagnostic(body.Id, body.RoleId, body.Owner, MovementClassification.Stuck, match.Tick, body.Pos, body.Destination, "no_progress"));
             Note(match.Tick, "stuck",
                 $"id={body.Id} role={body.RoleId} slot={body.Owner} activity={body.Activity} pos={body.Pos.X},{body.Pos.Z} dest={body.Destination.X},{body.Destination.Z} wait={body.PathWait} fallback={(body.PathFallback ? 1 : 0)} still={track.Still}");
         }
@@ -107,12 +125,13 @@ internal static class BehaviorLog
         if (track.Samples >= 16)
         {
             bool noProgress = dest2 >= track.DestAtWindow;
-            if (walking && track.Flips >= 6 && noProgress && !arrived)
+            if (walking && !legitimateWait && track.Flips >= 6 && noProgress && !arrived)
             {
                 if (!track.NotedOsc)
                 {
                     track.NotedOsc = true;
                     OscillateEvents++;
+                    Diagnostics.Add(new MovementDiagnostic(body.Id, body.RoleId, body.Owner, MovementClassification.Oscillate, match.Tick, body.Pos, body.Destination, "heading_flips"));
                     Note(match.Tick, "oscillate",
                         $"id={body.Id} role={body.RoleId} slot={body.Owner} flips={track.Flips} pos={body.Pos.X},{body.Pos.Z} dest={body.Destination.X},{body.Destination.Z}");
                 }
@@ -126,12 +145,12 @@ internal static class BehaviorLog
     public static string Report()
     {
         var text = new StringBuilder();
-        text.AppendLine($"BEHAVIOR_REPORT stuck={StuckEvents} oscillate={OscillateEvents} fallback_ticks={FallbackEvents} box={BoxEvents}");
+        text.AppendLine($"BEHAVIOR_REPORT wait={WaitEvents} stuck={StuckEvents} oscillate={OscillateEvents} fallback_ticks={FallbackEvents} box={BoxEvents}");
         foreach (var kv in Jobs.OrderBy(k => k.Key)) text.AppendLine($"ai.{kv.Key}={kv.Value}");
         int shown = 0;
         foreach (var line in Lines)
         {
-            if (line.Contains("summary ", StringComparison.Ordinal) || line.Contains(" stuck ", StringComparison.Ordinal) || line.Contains(" oscillate ", StringComparison.Ordinal) || line.Contains(" box ", StringComparison.Ordinal) || line.Contains("ai.", StringComparison.Ordinal))
+            if (line.Contains("summary ", StringComparison.Ordinal) || line.Contains(" wait ", StringComparison.Ordinal) || line.Contains(" stuck ", StringComparison.Ordinal) || line.Contains(" oscillate ", StringComparison.Ordinal) || line.Contains(" box ", StringComparison.Ordinal) || line.Contains("ai.", StringComparison.Ordinal))
             {
                 text.AppendLine(line);
                 if (++shown >= 80) break;

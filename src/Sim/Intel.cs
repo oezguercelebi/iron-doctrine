@@ -57,7 +57,19 @@ internal sealed partial class Match
             Entities = visible.OrderBy(e => e.Id).ToArray(), Visibility = (Visibility[])player.Fog.Clone(),
             Projectiles = shots.Where(s => Visible(viewerSlot, s.Pos)).Select(s => new ProjectileSnapshot(s.Id, s.Owner, Bodies.TryGetValue(s.Source, out var source) && (source.Owner == viewerSlot || Visible(viewerSlot, source.Pos)) ? s.Source : 0,
                 Visible(viewerSlot, s.TargetPos) ? s.Target : 0, s.DamageId, s.Pos, Visible(viewerSlot, s.TargetPos) ? s.TargetPos : s.Pos)).ToArray(),
+            CombatTraces = traces.Where(t => Visible(viewerSlot, t.Position)).Select(t => FilterTrace(viewerSlot, t)).OrderBy(t => t.Id).ThenBy(t => t.Phase).ToArray(),
             Events = events.Where(e => e.Slot == viewerSlot && (e.Id.StartsWith("vo.", StringComparison.Ordinal) || Visible(viewerSlot, e.Position))).ToArray()
+        };
+    }
+    private CombatTrace FilterTrace(int viewerSlot, CombatTrace t)
+    {
+        int sourceId = Bodies.TryGetValue(t.SourceId, out var source) && (source.Owner == viewerSlot || Visible(viewerSlot, source.Pos)) ? t.SourceId : 0;
+        bool targetVisible = Visible(viewerSlot, t.TargetPosition);
+        return t with
+        {
+            SourceId = sourceId,
+            TargetId = targetVisible ? t.TargetId : 0,
+            TargetPosition = targetVisible ? t.TargetPosition : t.Position
         };
     }
 }

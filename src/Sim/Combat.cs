@@ -38,10 +38,21 @@ internal sealed partial class Match
             if (!Near(unit.Pos, action.Position, Role(unit).AttackRange)) { MoveToward(unit, action.Position, Role(unit).AttackRange); return; }
             if (unit.Cooldown != 0) return;
             unit.Cooldown = Math.Max(1, Role(unit).AttackCooldownTicks * C.Ranks[unit.Rank].CooldownPercent / 100);
-            if (Role(unit).DeliveryId == "del.missile")
-                shots.Add(new Shot { Id = nextShotId++, Owner = unit.Owner, Source = unit.Id, Target = 0, Pos = unit.Pos, TargetPos = action.Position,
-                    Damage = Role(unit).Damage * C.Ranks[unit.Rank].DamagePercent / 100, DamageId = Role(unit).DamageId, Speed = Role(unit).ProjectileSpeedPerTick });
-            else HitGround(action.Position, Role(unit).DamageId, Role(unit).Damage * C.Ranks[unit.Rank].DamagePercent / 100, unit);
+            var role = Role(unit);
+            int damage = role.Damage * C.Ranks[unit.Rank].DamagePercent / 100;
+            int id = nextShotId++;
+            if (role.DeliveryId == "del.missile")
+            {
+                shots.Add(new Shot { Id = id, Owner = unit.Owner, Source = unit.Id, Target = 0, Pos = unit.Pos, TargetPos = action.Position,
+                    Damage = damage, DamageId = role.DamageId, DeliveryId = role.DeliveryId, Speed = role.ProjectileSpeedPerTick });
+                RecordTrace(id, unit.Id, 0, unit.Owner, role.DamageId, role.DeliveryId, CombatTracePhase.Launch, unit.Pos, action.Position, 0);
+            }
+            else
+            {
+                RecordTrace(id, unit.Id, 0, unit.Owner, role.DamageId, role.DeliveryId, CombatTracePhase.Launch, unit.Pos, action.Position, 0);
+                int applied = HitGround(action.Position, role.DamageId, damage, unit);
+                RecordTrace(id, unit.Id, 0, unit.Owner, role.DamageId, role.DeliveryId, CombatTracePhase.Impact, unit.Pos, action.Position, applied);
+            }
             return;
         }
         if (Bodies.TryGetValue(action.TargetId, out var target) && (target.Owner == unit.Owner || Visible(unit.Owner, target.Pos)) && target.ContainerId == 0 && (action.Kind == OrderKind.ForceAttack || Enemy(unit.Owner, target.Owner)))
@@ -63,9 +74,22 @@ internal sealed partial class Match
     {
         var role = Role(source);
         var damage = role.Damage * C.Ranks[source.Rank].DamagePercent / 100;
-        if (role.DeliveryId == "del.missile") shots.Add(new Shot { Id = nextShotId++, Owner = source.Owner, Source = source.Id, Target = target.Id, Pos = origin, TargetPos = target.Pos, Damage = damage, DamageId = role.DamageId, Speed = role.ProjectileSpeedPerTick });
-        else Hit(target, damage * DamagePercent(role.DamageId, target) / 100, source);
+        int id = nextShotId++;
+        if (role.DeliveryId == "del.missile")
+        {
+            shots.Add(new Shot { Id = id, Owner = source.Owner, Source = source.Id, Target = target.Id, Pos = origin, TargetPos = target.Pos, Damage = damage, DamageId = role.DamageId, DeliveryId = role.DeliveryId, Speed = role.ProjectileSpeedPerTick });
+            RecordTrace(id, source.Id, target.Id, source.Owner, role.DamageId, role.DeliveryId, CombatTracePhase.Launch, origin, target.Pos, 0);
+        }
+        else
+        {
+            var impactAt = target.Pos;
+            RecordTrace(id, source.Id, target.Id, source.Owner, role.DamageId, role.DeliveryId, CombatTracePhase.Launch, origin, impactAt, 0);
+            int applied = Hit(target, damage * DamagePercent(role.DamageId, target) / 100, source);
+            RecordTrace(id, source.Id, target.Id, source.Owner, role.DamageId, role.DeliveryId, CombatTracePhase.Impact, origin, impactAt, applied);
+        }
     }
+    private void RecordTrace(int id, int sourceId, int targetId, int owner, string damageId, string delivery, CombatTracePhase phase, WorldPoint position, WorldPoint targetPosition, int applied) =>
+        traces.Add(new CombatTrace(id, sourceId, targetId, owner, damageId, delivery, phase, position, targetPosition, applied));
     private void StepShots()
     {
         foreach (var shot in shots.ToArray())
@@ -76,27 +100,39 @@ internal sealed partial class Match
                 if (Near(shot.Pos, shot.TargetPos, C.Rules.MissileHitRadius))
                 {
                     Bodies.TryGetValue(shot.Source, out var shooter);
-                    HitGround(shot.TargetPos, shot.DamageId, shot.Damage, shooter); shots.Remove(shot);
+                    int applied = HitGround(shot.TargetPos, shot.DamageId, shot.Damage, shooter);
+                    RecordTrace(shot.Id, shot.Source, 0, shot.Owner, shot.DamageId, shot.DeliveryId, CombatTracePhase.Impact, shot.Pos, shot.TargetPos, applied);
+                    shots.Remove(shot);
                 }
                 continue;
             }
-            if (!Bodies.TryGetValue(shot.Target, out var victim) || victim.ContainerId != 0) { shots.Remove(shot); continue; }
+            if (!Bodies.TryGetValue(shot.Target, out var victim) || victim.ContainerId != 0)
+            {
+                RecordTrace(shot.Id, shot.Source, shot.Target, shot.Owner, shot.DamageId, shot.DeliveryId, CombatTracePhase.Cancel, shot.Pos, shot.TargetPos, 0);
+                shots.Remove(shot);
+                continue;
+            }
             shot.TargetPos = victim.Pos;
             shot.Pos = Toward(shot.Pos, shot.TargetPos, shot.Speed);
             if (!Near(shot.Pos, shot.TargetPos, C.Rules.MissileHitRadius + Role(victim).Radius)) continue;
             Bodies.TryGetValue(shot.Source, out var source);
-            Hit(victim, shot.Damage * DamagePercent(shot.DamageId, victim) / 100, source);
+            var impactAt = victim.Pos;
+            int dealt = Hit(victim, shot.Damage * DamagePercent(shot.DamageId, victim) / 100, source);
+            RecordTrace(shot.Id, shot.Source, shot.Target, shot.Owner, shot.DamageId, shot.DeliveryId, CombatTracePhase.Impact, shot.Pos, impactAt, dealt);
             shots.Remove(shot);
         }
     }
-    private void HitGround(WorldPoint position, string damageId, int damage, Body? source)
+    private int HitGround(WorldPoint position, string damageId, int damage, Body? source)
     {
+        int applied = 0;
         foreach (var victim in Bodies.Values.Where(b => b.ContainerId == 0 && !Role(b).Indestructible && Near(b.Pos, position, C.Rules.GroundForceAttackRadius + Role(b).Radius)).ToArray())
-            Hit(victim, damage * DamagePercent(damageId, victim) / 100, source);
+            applied += Hit(victim, damage * DamagePercent(damageId, victim) / 100, source);
+        return applied;
     }
-    internal void Hit(Body victim, int damage, Body? killer)
+    internal int Hit(Body victim, int damage, Body? killer)
     {
-        if (Role(victim).Indestructible || damage <= 0 || !Bodies.ContainsKey(victim.Id)) return;
+        if (Role(victim).Indestructible || damage <= 0 || !Bodies.ContainsKey(victim.Id)) return 0;
+        int applied = Math.Min(damage, Math.Max(0, victim.Hp));
         victim.Hp -= damage; victim.LastHit = Tick;
         if (victim.CaptureLeft > 0) FinishAction(victim);
         if (victim.Owner >= 0)
@@ -105,6 +141,7 @@ internal sealed partial class Match
             if (Role(victim).IsBuilding) Event("vo.under_attack", victim.Owner, victim);
         }
         if (victim.Hp <= 0) Destroy(victim, killer);
+        return applied;
     }
     internal void Destroy(Body victim, Body? killer)
     {

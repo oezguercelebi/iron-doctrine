@@ -26,6 +26,7 @@ public static class MechanicsProof
         Check("terrain pathing, waypoints, guard and flying traversal", Movement);
         Check("eight-slot teams, unfinished buildings and elimination", Outcome);
         Check("AI hidden-information equality, defense and depleted-dock expansion", Ai);
+        AtomicScenarios.Run(path);
     }
     private static void Check(string label, Action test) { test(); Console.WriteLine("PASS mechanics: " + label); }
     private static void Need(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
@@ -102,8 +103,10 @@ public static class MechanicsProof
     {
         var m = New(); var tank = m.Spawn("armor.basic", 0, new(6000, 1800)); var air = m.Spawn("eco.chinook", 1, new(7000, 1800)); air.AutoGather = false; m.Step();
         Need(!m.Submit(new MatchOrder(0, OrderKind.Attack, new[] { tank.Id }, air.Id)).Accepted, "Cannon cannot target air"); Steps(m, 100); Need(air.Hp == m.MaxHp(air), "Cannon auto attack does not hit air");
+        Need(!m.Snapshot(0).CombatTraces.Any(t => t.SourceId == tank.Id), "Tank must not emit a shot trace against air");
         var rocket = m.Spawn("inf.rocket", 0, new(6000, 2200)); Send(m, OrderKind.Attack, rocket, air.Id); m.Step();
         Need(m.Snapshot(0).Projectiles.Length > 0 && air.Hp == m.MaxHp(air), "Missile occupies world before impact");
+        Need(m.Snapshot(0).CombatTraces.Any(t => t.Phase == CombatTracePhase.Launch && t.DeliveryId == "del.missile" && t.SourceId == rocket.Id), "Missile launch must allocate a shot id");
         Until(m, () => !m.Bodies.ContainsKey(air.Id), 600, "Rocket must kill air");
         m = New(); var rifle = m.Spawn("inf.rifle", 0, new(6000, 2000)); rocket = m.Spawn("inf.rocket", 1, new(6900, 2000));
         Until(m, () => !m.Bodies.ContainsKey(rifle.Id) || !m.Bodies.ContainsKey(rocket.Id), 300, "Rifle rocket duel completes");
@@ -194,10 +197,26 @@ public static class MechanicsProof
         var c = config with { Map = config.Map with { Objects = Array.Empty<MapObjectConfig>() } };
         var s = c.CreateSetup() with { Fog = false, Slots = c.DefaultSlots.Select(p => p.Index == 1 ? p with { Occupant = Occupant.Player } : p).ToArray() };
         var m = (Match)new MatchFactory().Create(c, s); var ground = m.Spawn("build.dozer", 0, new(4200, 1400)); var air = m.Spawn("eco.chinook", 0, new(4200, 1400)); air.AutoGather = false;
-        var destination = new WorldPoint(6100, 1400); Send(m, OrderKind.Move, ground, pos: destination); Send(m, OrderKind.Move, air, pos: destination); Steps(m, 60);
-        Need(Distance2(air.Pos, destination) <= (long)config.Role("eco.chinook").Radius * config.Role("eco.chinook").Radius && ground.Pos != air.Pos, "Air crosses obstacle while ground routes around");
-        Until(m, () => ground.Actions.Count == 0, 600, "Ground path finds route around blocked rectangle");
-        Need(Distance2(ground.Pos, destination) <= (long)config.Role("build.dozer").Radius * config.Role("build.dozer").Radius, "Ground reaches legal target");
+        var destination = new WorldPoint(6100, 1400);
+        Need(!m.CanPlace(0, ground.Id, "power.fusion", new(5100, 1400)).Allowed, "CanPlace must deny ter.unbuildable even when ground can walk it");
+        Send(m, OrderKind.Move, ground, pos: destination); Send(m, OrderKind.Move, air, pos: destination);
+        bool traversed = false;
+        var prevGround = ground.Pos;
+        int groundSpeed = config.Role("build.dozer").SpeedPerTick;
+        int groundRadius = config.Role("build.dozer").Radius;
+        for (int i = 0; i < 200; i++)
+        {
+            m.Step();
+            Need(OracleGroundLegal(c, ground.Pos, groundRadius, m), "Ground footprint left walkable cells or entered a building disk");
+            Need(Distance2(prevGround, ground.Pos) <= (long)(groundSpeed + 1) * (groundSpeed + 1), "Ground exceeded per-tick speed");
+            SweptLegal(c, prevGround, ground.Pos, groundRadius, m);
+            if (OnUnbuildable(c.Map, ground.Pos)) traversed = true;
+            prevGround = ground.Pos;
+            if (ground.Actions.Count == 0 && i > 0) break;
+        }
+        Need(traversed, "Ground must occupy ter.unbuildable; catalog walk=yes, not a wall");
+        Need(Distance2(air.Pos, destination) <= (long)config.Role("eco.chinook").Radius * config.Role("eco.chinook").Radius, "Air ignores ground clutter and reaches the point");
+        Need(Distance2(ground.Pos, destination) <= (long)config.Role("build.dozer").Radius * config.Role("build.dozer").Radius, "Ground reaches legal target across unbuildable");
         Send(m, OrderKind.Move, ground, pos: new(6000, 3500)); Send(m, OrderKind.Waypoint, ground, pos: new(6500, 4000));
         Until(m, () => ground.Actions.Count == 0 && m.Tick > 61, 500, "Waypoints complete");
         // Submit is deferred, so execute pending waypoints before checking the resulting queue.
@@ -206,6 +225,58 @@ public static class MechanicsProof
         Send(m, OrderKind.AttackMove, attacker, pos: c.Map.Starts.Single(s => s.Slot == 1).Command); m.Step();
         var previous = attacker.Pos; Steps(m, 20); Need(attacker.Pos != previous, "Attack-move approaches an occupied enemy building footprint");
         var escort = m.Spawn("inf.rifle", 0, new(6500, 4400)); Send(m, OrderKind.Guard, escort, ground.Id); Steps(m, 20); Need(escort.Actions.Count == 1 && escort.Actions[0].Kind == OrderKind.Guard, "Guard persists");
+        var blocked = New();
+        var wall = blocked.Spawn("power.fusion", 0, new(5100, 2000));
+        var walker = blocked.Spawn("build.dozer", 0, new(4200, 2000));
+        var flyer = blocked.Spawn("eco.chinook", 0, new(4200, 2000)); flyer.AutoGather = false;
+        var past = new WorldPoint(6100, 2000);
+        Send(blocked, OrderKind.Move, walker, pos: past); Send(blocked, OrderKind.Move, flyer, pos: past);
+        int wallR = config.Role("power.fusion").Radius + config.Role("build.dozer").Radius;
+        for (int i = 0; i < 80; i++)
+        {
+            blocked.Step();
+            Need(Distance2(walker.Pos, wall.Pos) > (long)wallR * wallR, "Ground walked through a building disk");
+        }
+        Need(Distance2(flyer.Pos, past) <= (long)config.Role("eco.chinook").Radius * config.Role("eco.chinook").Radius, "Air ignores building clutter");
+        Until(blocked, () => walker.Actions.Count == 0, 600, "Ground routes around the building");
+        Need(Distance2(walker.Pos, past) <= (long)config.Role("build.dozer").Radius * config.Role("build.dozer").Radius, "Ground reaches past a building obstacle");
+    }
+    private static bool OnUnbuildable(MapConfig map, WorldPoint point)
+    {
+        int x = point.X / map.CellSize, z = point.Z / map.CellSize;
+        return map.InMap(x, z) && map.TerrainAt(x, z) == "ter.unbuildable";
+    }
+    private static bool OracleGroundLegal(GameConfig c, WorldPoint p, int radius, Match m)
+    {
+        var map = c.Map;
+        if (!map.InMap(new WorldPoint(p.X - radius, p.Z - radius)) || !map.InMap(new WorldPoint(p.X + radius, p.Z + radius))) return false;
+        int cell = map.CellSize;
+        for (int z = (p.Z - radius) / cell; z <= (p.Z + radius) / cell; z++)
+            for (int x = (p.X - radius) / cell; x <= (p.X + radius) / cell; x++)
+            {
+                if (map.InMap(x, z) && map.GroundWalkable(map.TerrainAt(x, z))) continue;
+                int nearX = Math.Clamp(p.X, x * cell, (x + 1) * cell), nearZ = Math.Clamp(p.Z, z * cell, (z + 1) * cell);
+                if (Distance2(p, new WorldPoint(nearX, nearZ)) <= (long)radius * radius) return false;
+            }
+        foreach (var b in m.Bodies.Values)
+        {
+            if (b.ContainerId != 0 || c.Role(b.RoleId).IsFlying || !(c.Role(b.RoleId).IsBuilding || b.RoleId == "map.dock")) continue;
+            long r = radius + c.Role(b.RoleId).Radius;
+            if (Distance2(p, b.Pos) <= r * r) return false;
+        }
+        return true;
+    }
+    private static void SweptLegal(GameConfig c, WorldPoint from, WorldPoint to, int radius, Match m)
+    {
+        int stride = Math.Max(1, Math.Min(c.Map.CellSize / 2, radius));
+        var p = from;
+        while (Distance2(p, to) > (long)stride * stride)
+        {
+            long length = Distance2(p, to);
+            int root = 1; while ((long)(root + 1) * (root + 1) <= length) root++;
+            p = new WorldPoint(p.X + (int)((long)(to.X - p.X) * stride / root), p.Z + (int)((long)(to.Z - p.Z) * stride / root));
+            Need(OracleGroundLegal(c, p, radius, m), "Swept ground footprint left legal terrain");
+        }
     }
     private static void Outcome()
     {

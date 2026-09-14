@@ -53,5 +53,16 @@ Provisional defaults Q1–Q10 taken as spec. Additional: `TerrainAt` OOB should 
 
 C is next. Shared base will be a local commit of this case folder, then a real worktree `.worktrees/c-freeze`.
 
+## 2026-09-14T22:05Z lead
+Shared base commit `1420b867e9a89f5a2d7c215ab4dffe72956b8e87`. Worktree `.worktrees/c-freeze` on `case/vsr/c-freeze` exists on disk. Spawned C (`general-purpose` grok-4.6 high, cwd=worktree). Model mapping logged: C high / grok-4.6 (no silent downgrade).
+
 ## 2026-09-14T22:20Z s
 Spec accepted-write: `spec.md`, `plan.md`, `acceptance-matrix.md`, `contracts-outline.md`, `locomotion-requirements.md`; status amended. Lanes: c-freeze → i-verify / i-sim / i-client (wave1) → i-assets → lead-hubs / integrate-proof. C seams: terrain unbuildable, shot causal fields, replay/scenario API, wait-vs-stuck, provisional ghost, animation allowlist. Proof: keep proof.sh / Client Proof / verify_assets / audit; add `bash tools/verify.sh` fail-closed. Q1–Q10 defaults taken (authorized). Budget unchanged. Row count 7. Ready for C freeze.
+
+## 2026-09-14T22:30Z lead
+C merged `e3a01b030a7fb8722f6c83e247e04b6bf1b9aea9`. Lane check matched glob. Lead re-ran:
+- `dotnet run --project tests/SimProof.csproj -- acceptance` fail 134, right reasons (unbuildable traverse; empty CombatTraces). Helpers + scenario stubs PASS.
+- `bash tools/proof.sh` exit 0; full match hash `AFF97B33D0FECB7208E09F6869EDA724E97384863B4137450AD977D751317842` unchanged.
+- `python3 tools/art/verify_assets.py` PASS 15.
+
+Spawning R on `1420b86..e3a01b0` (`pr-review-toolkit:code-reviewer` grok-4.6 xhigh, no write) and wave1 I-verify / I-sim / I-client in real worktrees.

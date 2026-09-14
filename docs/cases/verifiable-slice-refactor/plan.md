@@ -4,7 +4,7 @@ Max three I lanes concurrent. Shared file or import edge without freeze ⇒ one 
 
 ## Contract freeze (first)
 
-- [ ] `c-freeze` open · lane `src/Contracts/MatchContract.cs` `src/Contracts/GameConfig.cs` `tests/SeamConformance.cs` `tests/AcceptanceContracts.cs` `tests/ScenarioHarness.cs` `tests/Program.cs` `tools/art/verify_assets.py` · after — · Freeze terrain (`ter.unbuildable` ground yes/build no), `CombatTrace` + shot ids, sealed-replay + named-scenario API stubs, wait-vs-stuck diagnostic surface, provisional ghost-occupancy note, animation allowlist policy. Leave acceptance stubs **failing for the right reason**. `Program.cs` may gain an `acceptance` argv only; I-verify extends the selector after this merge. No feature implementation in `src/Sim` or `src/Client`.
+- [x] `c-freeze` done · lane `src/Contracts/MatchContract.cs` `src/Contracts/GameConfig.cs` `tests/SeamConformance.cs` `tests/AcceptanceContracts.cs` `tests/ScenarioHarness.cs` `tests/Program.cs` `tools/art/verify_assets.py` · after — · Merged `e3a01b0`. Acceptance red for unbuildable traverse + empty CombatTraces. proof.sh green.
 
 ## Implementation (after freeze)
 

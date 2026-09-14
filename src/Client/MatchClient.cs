@@ -313,7 +313,7 @@ public partial class MatchClient : Node3D
                 .ToArray();
             if (selected.Length > 0) return selected;
         }
-        return target.Completed ? new[] { target.Id } : Array.Empty<int>();
+        return new[] { target.Id };
     }
 
     private bool CanCapture(EntitySnapshot target, EntitySnapshot[] actors)

@@ -1,6 +1,6 @@
 # Roadmap
 
-Phases 0–2 are complete. The accepted first playable is implemented and blocked in final review on two gameplay edge cases. Later phases are not scheduled.
+Phases 0–3 are complete. First playable is a local 1vAI match. Later phases are not scheduled.
 
 ## 0. This repo (done)
 
@@ -28,9 +28,9 @@ Final balance and product names are still later. The slice uses one labeled plac
 
 Godot **4.8 .NET**, top-down 3D. Sim is a tick + orders, not `Node`. View is glTF. Later MP is lockstep LAN/P2P over ENet, no backend. Until 4.8 stable, 4.7.2 is allowed. See [CONSTRAINTS.md](CONSTRAINTS.md).
 
-## 3. First playable — 1 vs computer
+## 3. First playable — 1 vs computer (done)
 
-One human, one AI, one 2-slot map, vanilla Aegis. Win by destroying enemy buildings. Proof is a match you can finish, not a menu. No netcode. See [slice-1-playable](cases/slice-1-playable/status.md) and its [acceptance evidence](cases/slice-1-playable/acceptance.md).
+One human, one AI, one 2-slot map, vanilla Aegis. Win by destroying enemy buildings. Closed case: [slice-1-playable](cases/slice-1-playable/status.md).
 
 ## 4. Multiplayer (the goal)
 

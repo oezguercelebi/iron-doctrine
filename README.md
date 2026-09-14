@@ -61,7 +61,7 @@ Catalog sheets contain no balance numbers or frozen product names. All temporary
 ## Status
 
 - Game name: **Iron Doctrine**
-- App: playable slice-1; final review blocked on two edge cases; [case status](docs/cases/slice-1-playable/status.md)
+- App: playable slice-1 (1vAI). Case [slice-1-playable](docs/cases/slice-1-playable/status.md) closed.
 - Stack: Godot 4.8 .NET. Tick sim, glTF view, lockstep LAN/P2P later. No backend.
 - Backend: none, by design
 

@@ -141,3 +141,9 @@ All three feel lanes R-approved. Sim proof and client proof green on main. User 
 
 ## 2026-09-14 r · case feel-wave
 approve. No interaction findings ≥80. Combined range f923e3f..b7a5417 meets the 2026-09-14 amend.
+
+## 2026-09-14 user
+close
+
+## 2026-09-14 lead
+Close gate. Provisionals accepted as listed in surprise.md. Locks cleared. Push per budget at-close. Case closed. No sibling case filed.

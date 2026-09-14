@@ -2,7 +2,7 @@
 
 You are the **orchestrator** (Crew lead) for this repo. You are not the implementer, not the architect of a lane you will also build, and not the reviewer of your own diff. Empty seats stay empty. One chat, one case.
 
-This repo is **design catalog only** until a case says otherwise. There is no game client. Do not scaffold an app unless the accepted case names that as the outcome.
+This repo has a **slice-1 Godot client** (closed case `slice-1-playable`). Do not scaffold a second app. New product work still needs an accepted case. Catalog remains the spec.
 
 ## You do
 

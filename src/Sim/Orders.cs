@@ -95,7 +95,8 @@ internal sealed partial class Match
         if (!HasPrerequisites(slot, role)) return new(false, "Missing prerequisite.");
         if (p.Money < role.Cost) return new(false, "Insufficient funds.");
         if (!TerrainFits(position, role.Radius)) return new(false, "Blocked terrain.");
-        if (Bodies.Values.Any(b => Obstacle(b) && (b.Owner == slot || Visible(slot, b.Pos)) && Near(position, b.Pos, role.Radius + Role(b).Radius))) return new(false, "Building footprint blocked.");
+        // Same occupancy Build uses (GroundFits units), but only own or currently visible bodies so the ghost cannot leak fog.
+        if (Bodies.Values.Any(b => b.Id != builderId && b.ContainerId == 0 && !Role(b).IsFlying && (b.Owner == slot || Visible(slot, b.Pos)) && Near(position, b.Pos, role.Radius + Role(b).Radius))) return new(false, "Building footprint blocked.");
         if (p.Memory.Values.Any(b => b.IsRemembered && (roles[b.RoleId].IsBuilding || b.RoleId == "map.dock") && Near(position, b.Position, role.Radius + roles[b.RoleId].Radius))) return new(false, "Known footprint blocked.");
         return new(true, "");
     }

@@ -1,10 +1,10 @@
-status: building
-lanes: c-freeze done (e3a01b0) · i-verify (wt) · i-sim (wt) · i-client (wt) · i-assets idle · lead-hubs · integrate-proof
+status: idle-review
+lanes: all I merged · final case R running
 parent: —
 blocked: —
 blocked-since: —
 provisional: Q1–Q10 as spec
-next: wave1 three I lanes + R on c-freeze range
-tested-revision: e3a01b0 (proof.sh green; acceptance red by design)
-reviewed-revision: — (R spawning on c-freeze)
-acceptance-summary: seam frozen; I not merged
+next: final integration R on 12e26d5; user visual/play and close
+tested-revision: b649bd0 (verify.sh exit 0) + 12e26d5 (frames/docs)
+reviewed-revision: per-lane APPROVE; final pending
+acceptance-summary: engineering suite green on this Mac; render harness still pending; user visual/play not accepted

@@ -76,3 +76,14 @@ I-verify `949094d` lane-check clean. Lead re-ran: `--list` 0; `--group acceptanc
 I-client `3c8d698` lane-check clean. Lead re-ran: Client Proof HELPER_NOT_GUI_OK; `dotnet build` 0; `verify-godot.sh` three VERIFY_PASS (chrome leak, Fusion ghost via PushInput, Escape pause). VERIFY_RENDER pending headless.
 
 Merging both; spawning R. I-sim still building.
+
+## 2026-09-15T00:20Z lead
+Wave1+assets merged. Lane R: c-freeze, i-verify, i-client, i-sim, i-assets all APPROVE (see `reviews/`).
+
+Integrated `bash tools/verify.sh` on `b649bd0` exit 0: sim, sealed replay, acceptance, assets, client-intent, review-harness, client-gui pass; audit pending/not gated; render group pending in harness.
+
+Negative controls (not merged): unbuildable-as-wall fails traverse; empty CombatTraces fails traces.
+
+macOS frames on `12e26d5`: `proof/frames/{build-ghost,pause,hud-chrome}.png` display=macOS gl_compatibility. Locomotion bob/rotors not in stills.
+
+Spawning final integration R on `c5aefdd..12e26d5`. No push. User closes.

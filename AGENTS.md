@@ -122,13 +122,17 @@ Run from the repo root. Inspect the commands when changing their scope; these de
 
 | Command | Current coverage |
 | --- | --- |
-| `bash tools/proof.sh` | Plain C# seam, timing, mechanics, regression, boundary, and full-match checks with paired simulation runs. Uses a console executable, not test discovery through `dotnet test`. |
+| `bash tools/verify.sh` | Case entry: list/select named scenarios; structured JSON in `artifacts/verify/outcomes.json`. Fail-closed on required missing checks. Groups: sim, acceptance, client-intent, assets, review-harness, client-gui. Audit is report-only. Render is pending without a display. Does not use `dotnet test`. |
+| `bash tools/proof.sh` | Plain C# seam, timing, mechanics, atomics, regression, boundary, and full-match checks with paired simulation runs plus sealed order replay. Console executable, not `dotnet test`. |
 | `bash src/Client/Proof/run.sh` | Plain C# command-intent and selection-information checks; no real Godot mouse, HUD, or rendering execution. |
-| `python3 tools/art/verify_assets.py` | GLB structure and asset-contract checks. Blender import checks run only when executed with Blender's Python environment. No runtime animation proof. |
-| `bash tools/audit.sh` | Behavioral diagnostic report in `artifacts/behavior-audit.txt`; currently does not fail on reported stuck/oscillation alerts. |
+| `bash src/Client/Proof/verify-godot.sh` | Headless Godot: `Viewport.PushInput` through production `_Input`. Dispatch/receipt only; not a render pass. |
+| `python3 tools/art/verify_assets.py` | GLB structure and asset-contract checks. No armatures. Zero glTF clips allowed. Blender import checks run only in Blender's Python environment. Runtime bob/rotor spin is a client presentation check, not this script. |
+| `bash tools/audit.sh` | Behavioral diagnostic report in `artifacts/behavior-audit.txt`; does not fail on reported stuck/oscillation alerts until calibrated atomic gates exist. |
 | `bash tools/run.sh` | Checks Godot version, builds C#, imports assets, and launches the client. A successful launch alone is not a gameplay or visual acceptance check. |
 
-Persisted replay packages, independently selectable atomic scenarios, automated GUI/render gates, structured evidence manifests, and CI are capabilities to build in accepted cases, not facilities these rules create. Until available, record commands, reproductions, artifacts, and missing coverage in the case folder. Do not invent a command or claim a missing gate ran.
+Behavior-to-scenario map: `docs/cases/verifiable-slice-refactor/acceptance-matrix.md`. Adding a contract: catalog rule → case `contracts-outline.md` → C/IMatch test → `tools/verify.sh --scenario`. Replay a failure: sealed bundle fields in `ReplayBundle` / `tests/ReplayPackage.cs`. Visual/play accept: `docs/cases/verifiable-slice-refactor/visual-play.md` (user gate). `tools/review_case.py --case <id>` parses APPROVE/BLOCK; process exit 0 is not approval.
+
+Persisted replay packages, selectable atomics, and Godot dispatch exist in this case. Automated golden-frame render gates and hosted CI do not; do not invent a command or claim a missing gate ran.
 
 ## Completion and continued evolution
 

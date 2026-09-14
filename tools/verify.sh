@@ -22,15 +22,15 @@ usage() {
 tools/verify.sh — named scenarios/groups, structured JSON, fail-closed.
 
   (no args)              required integrated suite (sim, sealed replay, acceptance, assets,
-                         client-intent, review-harness; audit info; client-gui/render pending)
+                         client-intent, review-harness, client-gui; audit info; render pending)
   --list                 print groups and scenarios
   --scenario <id>        run one scenario
   --group <name>         sim|acceptance|client-intent|assets|audit|review-harness|client-gui|render
   --gate                 reserved; audit still does not fail on stuck counts (Q5)
   --json                 print outcomes JSON to stdout as well as artifacts/verify/outcomes.json
 
-Default suite runs sim+assets+acceptance even without Godot. client-gui and render are listed
-pending (this lane does not implement Godot). Full case gate still needs those groups.
+Default suite runs sim, sealed replay, acceptance, assets, client-intent, review-harness,
+and client-gui (Godot PushInput). Audit is info. render stays pending without a display.
 client-intent is helper-not-GUI. Audit is not a fail gate. Does not use dotnet test.
 EOF
 }
@@ -86,8 +86,8 @@ groups = [
     ("assets", "required", "python3 tools/art/verify_assets.py"),
     ("audit", "info", "tools/audit.sh report; not a fail gate (Q5)"),
     ("review-harness", "required", "tools/review_case.py --self-check"),
-    ("client-gui", "pending", "Godot Viewport.PushInput; not implemented in i-verify"),
-    ("render", "pending", "Controlled frame capture; not implemented in i-verify"),
+    ("client-gui", "required", "src/Client/Proof/verify-godot.sh PushInput through production _Input"),
+    ("render", "pending", "Controlled frame capture; headless is not rendering evidence"),
 ]
 print("GROUPS")
 for name, gate, note in groups:
@@ -252,7 +252,7 @@ run_review() {
 
 run_client_gui() {
   local gate="$1"
-  emit_pending client-gui "$gate" "Godot GUI not implemented in i-verify; Viewport.PushInput is the only legal GUI driver. Do not treat helper tests as GUI proof."
+  run_cmd client-gui "$gate" bash "$ROOT/src/Client/Proof/verify-godot.sh"
 }
 
 run_render() {
@@ -296,11 +296,14 @@ run_named_scenario() {
     verify.sealed_replay) run_replay ;;
     verify.review_case_generalized) run_review "$id" ;;
     verify.entry_fail_closed) run_entry_fail_closed ;;
-    path.distinguish_wait_vs_stuck)
-      emit_pending "$id" 1 "i-sim atomic not present; audit is diagnostic only and is not this gate (Q5)"
+    path.distinguish_wait_vs_stuck|path.air_ignores_ground_clutter|combat.tank_cannot_hit_chinook|combat.rocket_missile_kills_chinook|combat.missile_exists_before_impact|combat.no_duplicate_missile_impact|build.unbuildable_blocks_place)
+      run_sim
+      ;;
+    client.no_fog_world_leak|client.input_build_ghost_point|match.pause_freezes_clock)
+      run_cmd "$id" 1 bash "$ROOT/src/Client/Proof/verify-godot.sh" "$id"
       ;;
     client.*|presentation.*)
-      emit_pending "$id" 1 "Godot GUI/render not implemented in i-verify; missing required check is not pass"
+      emit_pending "$id" 1 "GUI/render scenario not wired; missing required check is not pass"
       ;;
     *)
       write_outcome "$id" fail 0 "unknown scenario $id; missing required check is not pass" "" 1
@@ -334,7 +337,7 @@ run_default() {
   run_client_intent
   run_review
   run_audit
-  run_client_gui 0
+  run_client_gui 1
   run_render 0
 }
 

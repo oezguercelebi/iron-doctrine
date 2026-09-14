@@ -6,7 +6,7 @@ The client takes one detached snapshot after **every** fixed simulation step and
 
 Enemy facing follows successive visible positions. Enemy combat feedback uses visible health changes; it never reads redacted enemy activity, destinations or targets or invents shot endpoints. Private order targets are used only for the viewer's own instant-fire tracers. A disabled radar suppresses live minimap entity blips, including selected units. For non-owned selections, activity and passengers/cargo are shown as unknown; private XP and progress are omitted instead of displaying redacted defaults as facts.
 
-Ground-point orders (Build, Move, Attack-move, Guard, Waypoint, Rally and Exit) discard the hovered entity ID before submission, preserving the requested ground coordinate. Attack, Force-attack, Repair, Gather, Enter and Capture retain deliberate entity targets.
+Ground-point orders (Build, Move, Attack-move, Waypoint, Rally and Exit) discard the hovered entity ID before submission, preserving the requested ground coordinate. Guard keeps a picked unit TargetId so it follows that unit; with no pick it stays a ground point. Attack, Force-attack, Repair, Gather, Enter and Capture retain deliberate entity targets. A selected own producer shows its rally flag again on re-select (HUD draws it).
 
 ## Controls
 
@@ -20,11 +20,12 @@ Ground-point orders (Build, Move, Attack-move, Guard, Waypoint, Rally and Exit) 
 | WASD / arrows | Pan |
 | Middle drag / wheel | Pan / zoom |
 | Space / Tab | Focus selection / find Dozer |
-| Q / X / G | Attack-move / stop / guard |
+| Q / X / G | Attack-move / stop / guard a unit or a point |
 | Z | Ordinary attack against a visible enemy, including after capture research |
 | T / F | Append waypoint / force attack (including friendly targets) |
 | R / E / C | Repair / enter / capture |
-| V / Y / Delete | Exit passengers / rally / sell |
+| V / Y | Exit passengers / rally (flag remains on re-select) |
+| Delete | Sell mode, then click your building to confirm |
 | Build card, then left click | Place a footprint checked with `IMatch.CanPlace` |
 | Producer card | Queue its configured unit or research |
 | Queue number × | Cancel that queue position with the configured refund |
@@ -49,4 +50,4 @@ The start marker is `PROOF_PLAY_STARTED`. A finished game emits `PROOF_PLAY_FINI
 
 Run `bash src/Client/Proof/run.sh` from the repository root. Set `IRON_DOTNET` to a .NET 8 executable if it is not installed on the path or under the repository's `.tools`. The runner creates and removes a disposable .NET project; it does not change the game project or tuning. `ClientInputProof.cs` is excluded from the game by a compilation symbol.
 
-The proof links the production command/intel helpers and the actual simulation. It submits Build with a nearby picked unit, then verifies the created building matches the approved ghost point. It covers the analogous ground modes, preserved entity targets, enemy redacted activity/passengers/cargo/XP, and retained own-unit details. This is an order/data regression check; manual mouse/HUD interactions remain a separate proof.
+The proof links the production command/intel helpers and the actual simulation. It submits Build with a nearby picked unit, then verifies the created building matches the approved ghost point. It covers the analogous ground modes (Move still discards a pick), Guard retaining a picked unit and staying ground when none is picked, preserved entity targets, enemy redacted activity/passengers/cargo/XP, and retained own-unit details. This is an order/data regression check; manual mouse/HUD interactions remain a separate proof.

@@ -9,8 +9,9 @@ internal static class CommandIntent
     {
         // Hover/picking must not turn a ground-point command into an entity-following command.
         // In particular, Build must carry exactly the same point approved by CanPlace.
+        // Guard follows a picked unit; with no pick it stays a ground point.
         int target = kind is OrderKind.Attack or OrderKind.ForceAttack or OrderKind.Repair
-            or OrderKind.Gather or OrderKind.Enter or OrderKind.Capture ? pickedId : 0;
+            or OrderKind.Gather or OrderKind.Enter or OrderKind.Capture or OrderKind.Guard ? pickedId : 0;
         return new MatchOrder(slot, kind, actors, target, position, product, append, queueIndex);
     }
 }

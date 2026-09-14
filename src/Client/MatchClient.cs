@@ -94,12 +94,12 @@ public partial class MatchClient : Node3D
             if (Input.IsPhysicalKeyPressed(Key.D) || Input.IsPhysicalKeyPressed(Key.Right)) direction.X++;
             var mouse = GetViewport().GetMousePosition();
             var size = GetViewport().GetVisibleRect().Size;
-            if (new Rect2(Vector2.Zero, size).HasPoint(mouse) && !_hud.BlocksWorld(mouse) && DisplayServer.WindowIsFocused())
+            if (new Rect2(Vector2.Zero, size).HasPoint(mouse) && DisplayServer.WindowIsFocused())
             {
-                if (mouse.X < 7) direction.X--;
-                if (mouse.X > size.X - 7) direction.X++;
-                if (mouse.Y < 80) direction.Y--;
-                if (mouse.Y > size.Y - 230) direction.Y++;
+                if (mouse.X < 8) direction.X--;
+                if (mouse.X > size.X - 8) direction.X++;
+                if (mouse.Y < 8) direction.Y--;
+                if (mouse.Y > size.Y - 8) direction.Y++;
             }
             if (direction.LengthSquared() > 0) _field.Pan(direction.Normalized(), delta);
             _hud.Hovered = _hud.BlocksWorld(mouse) ? null : _field.Pick(mouse);
@@ -139,6 +139,7 @@ public partial class MatchClient : Node3D
                 "vo.power" => "Low power — radar and defenses offline.",
                 "vo.building_done" => "Construction complete.",
                 "vo.unit_ready" => "Unit ready.",
+                "vo.upgrade_done" => "Research complete.",
                 "vo.under_attack" => "Your base is under attack.",
                 "vo.victory" => "Victory — enemy buildings eliminated.",
                 "vo.defeat" => "Defeat.",
@@ -251,7 +252,19 @@ public partial class MatchClient : Node3D
     }
     private void BoxSelect(Rect2 rect, bool append)
     {
-        var candidates = _snapshot.Entities.Where(e => e.OwnerSlot == _slot && e.ContainerId == 0 && rect.HasPoint(_field.ScreenPosition(e))).ToArray();
+        float viewH = GetViewport().GetVisibleRect().Size.Y;
+        float units = _match.Config.Rules.UnitsPerWorldUnit;
+        var candidates = _snapshot.Entities.Where(e =>
+        {
+            if (e.OwnerSlot != _slot || e.ContainerId != 0) return false;
+            var role = _match.Config.Role(e.RoleId);
+            var center = _field.ScreenPosition(e, role.IsBuilding ? 1 : .5f);
+            float radius = Math.Max(role.IsInfantry ? 13 : 18, role.Radius / units * viewH / _field.Zoom);
+            var closest = new Vector2(
+                Mathf.Clamp(center.X, rect.Position.X, rect.End.X),
+                Mathf.Clamp(center.Y, rect.Position.Y, rect.End.Y));
+            return closest.DistanceSquaredTo(center) <= (radius + 7) * (radius + 7);
+        }).ToArray();
         if (candidates.Any(e => !_match.Config.Role(e.RoleId).IsBuilding)) candidates = candidates.Where(e => !_match.Config.Role(e.RoleId).IsBuilding).ToArray();
         if (!append) _selection.Clear();
         foreach (var entity in candidates) _selection.Add(entity.Id);
@@ -284,6 +297,23 @@ public partial class MatchClient : Node3D
         if (owner < 0) return false;
         var ourSlot = _match.Setup.Slots.First(s => s.Index == _slot);
         return ourSlot.Team > 0 && _match.Setup.Slots.Any(s => s.Index == owner && s.Team == ourSlot.Team);
+    }
+
+    private int[] SellActors(EntitySnapshot? target)
+    {
+        if (target == null || target.OwnerSlot != _slot) return Array.Empty<int>();
+        var role = _match.Config.Role(target.RoleId);
+        if (!role.IsBuilding || role.IsNeutral) return Array.Empty<int>();
+        if (OwnedSelection().Contains(target.Id))
+        {
+            int[] selected = _snapshot.Entities
+                .Where(e => OwnedSelection().Contains(e.Id))
+                .Where(e => { var r = _match.Config.Role(e.RoleId); return r.IsBuilding && !r.IsNeutral; })
+                .Select(e => e.Id)
+                .ToArray();
+            if (selected.Length > 0) return selected;
+        }
+        return target.Completed ? new[] { target.Id } : Array.Empty<int>();
     }
 
     private bool CanCapture(EntitySnapshot target, EntitySnapshot[] actors)
@@ -341,7 +371,7 @@ public partial class MatchClient : Node3D
             return;
         }
         var actors = OwnedSelection();
-        if (actors.Length == 0) { Notify("Select your units first."); return; }
+        if (action != "sell" && actors.Length == 0) { Notify("Select your units first."); return; }
         if (action is "queue" or "cancel")
         {
             // Bind the button to the producer whose queue was drawn, even if the selection changes before the click.
@@ -351,10 +381,9 @@ public partial class MatchClient : Node3D
             return;
         }
         if (action == "stop") { Submit(OrderKind.Stop, actors); ClearMode(); return; }
-        if (action == "sell") { Submit(OrderKind.Sell, actors); ClearMode(); return; }
-        _mode = action switch { "move" => OrderKind.Move, "attack" => OrderKind.Attack, "attackmove" => OrderKind.AttackMove, "guard" => OrderKind.Guard, "waypoint" => OrderKind.Waypoint, "force" => OrderKind.ForceAttack, "repair" => OrderKind.Repair, "gather" => OrderKind.Gather, "enter" => OrderKind.Enter, "capture" => OrderKind.Capture, "exit" => OrderKind.Exit, "rally" => OrderKind.Rally, "build" => OrderKind.Build, _ => null };
+        _mode = action switch { "move" => OrderKind.Move, "attack" => OrderKind.Attack, "attackmove" => OrderKind.AttackMove, "guard" => OrderKind.Guard, "waypoint" => OrderKind.Waypoint, "force" => OrderKind.ForceAttack, "repair" => OrderKind.Repair, "gather" => OrderKind.Gather, "enter" => OrderKind.Enter, "capture" => OrderKind.Capture, "exit" => OrderKind.Exit, "rally" => OrderKind.Rally, "build" => OrderKind.Build, "sell" => OrderKind.Sell, _ => null };
         _buildRole = action == "build" ? product : "";
-        _hud.ModeText = action == "build" ? "PLACE  /  " + _match.Config.Role(product).Label.ToUpperInvariant() : _mode switch { OrderKind.AttackMove => "ATTACK-MOVE", OrderKind.ForceAttack => "FORCE FIRE — ALLIES CAN BE HIT", OrderKind.Waypoint => "APPEND WAYPOINT", _ => _mode?.ToString().ToUpperInvariant() ?? "" };
+        _hud.ModeText = action == "build" ? "PLACE  /  " + _match.Config.Role(product).Label.ToUpperInvariant() : _mode switch { OrderKind.AttackMove => "ATTACK-MOVE", OrderKind.ForceAttack => "FORCE FIRE — ALLIES CAN BE HIT", OrderKind.Waypoint => "APPEND WAYPOINT", OrderKind.Sell => "SELL — click your building", OrderKind.Guard => "GUARD — UNIT OR POINT", _ => _mode?.ToString().ToUpperInvariant() ?? "" };
         _hud.PlacementText = "";
     }
 
@@ -366,6 +395,13 @@ public partial class MatchClient : Node3D
         {
             Notify("Capture requires researched Rifle units and a visible enemy building. Garrisons must be attacked.");
             _audio.Notify("sfx.invalid");
+            return;
+        }
+        if (_mode == OrderKind.Sell)
+        {
+            int[] sell = SellActors(target);
+            if (sell.Length == 0) { Notify("Click your building to sell."); _audio.Notify("sfx.invalid"); return; }
+            if (Submit(OrderKind.Sell, sell) && !append) ClearMode();
             return;
         }
         if (_mode == OrderKind.Build)
@@ -383,6 +419,8 @@ public partial class MatchClient : Node3D
     {
         var receipt = _match.Submit(CommandIntent.Create(_slot, kind, actors, target, position, product, append, queueIndex));
         if (!receipt.Accepted) { Notify(receipt.Reason); _audio.Notify("sfx.invalid"); return false; }
+        if (kind == OrderKind.Rally) _audio.Notify("sfx.rally");
+        if (kind == OrderKind.Build) _audio.Notify("sfx.place");
         if (kind is OrderKind.Move or OrderKind.AttackMove or OrderKind.Guard or OrderKind.Waypoint or OrderKind.Rally or OrderKind.Build or OrderKind.Exit) _field.MarkOrder(position, new Color("84d6c1"));
         Notify(kind == OrderKind.Queue ? $"Queued {_match.Config.Role(product).Label}." : kind == OrderKind.Build ? $"Constructing {_match.Config.Role(product).Label}." : kind == OrderKind.CancelQueue ? "Queue item cancelled." : kind + " order issued.");
         return true;

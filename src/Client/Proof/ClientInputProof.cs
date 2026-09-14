@@ -22,13 +22,18 @@ for (int i = 0; i < config.Role("power.fusion").BuildTicks && site == null; i++)
 Require(site != null && site.Position == clicked && site.Position != builder.Position, "Actual simulation construction must use the legal ghost point, not the picked unit position.");
 Console.WriteLine($"PASS real-sim Build picked={builder.Id}@{builder.Position} ghost={clicked} actual={site!.Position}");
 
-var groundKinds = new[] { OrderKind.Build, OrderKind.Move, OrderKind.AttackMove, OrderKind.Guard, OrderKind.Waypoint, OrderKind.Rally, OrderKind.Exit };
+var groundKinds = new[] { OrderKind.Build, OrderKind.Move, OrderKind.AttackMove, OrderKind.Waypoint, OrderKind.Rally, OrderKind.Exit };
 foreach (var kind in groundKinds)
 {
     var order = CommandIntent.Create(0, kind, new[] { builder.Id }, builder.Id, clicked, append: true);
     Require(order.TargetId == 0 && order.Position == clicked && order.Append, $"{kind} must preserve the ground point and append modifier.");
 }
-Console.WriteLine("PASS Build/Move/AttackMove/Guard/Waypoint/Rally/Exit discard incidental picked entity IDs");
+Console.WriteLine("PASS Build/Move/AttackMove/Waypoint/Rally/Exit discard incidental picked entity IDs");
+var guardFollow = CommandIntent.Create(0, OrderKind.Guard, new[] { builder.Id }, builder.Id, clicked, append: true);
+Require(guardFollow.TargetId == builder.Id && guardFollow.Position == clicked && guardFollow.Append, "Guard with a picked unit must retain TargetId so the unit is followed.");
+Require(CommandIntent.Create(0, OrderKind.Guard, new[] { builder.Id }, 0, clicked).TargetId == 0, "Guard with no pick stays a ground point.");
+Require(CommandIntent.Create(0, OrderKind.Move, new[] { builder.Id }, builder.Id, clicked).TargetId == 0, "Move still discards a picked entity ID.");
+Console.WriteLine("PASS Guard retains a picked unit TargetId; ground Guard and Move stay ground targeting");
 foreach (var kind in new[] { OrderKind.Attack, OrderKind.ForceAttack, OrderKind.Repair, OrderKind.Gather, OrderKind.Enter, OrderKind.Capture })
     Require(CommandIntent.Create(0, kind, new[] { builder.Id }, builder.Id, clicked).TargetId == builder.Id, $"{kind} must retain a deliberate target.");
 Require(CommandIntent.Create(0, OrderKind.ForceAttack, new[] { builder.Id }, position: clicked).TargetId == 0, "Ground force-attack must remain ground targeting.");

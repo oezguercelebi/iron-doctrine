@@ -60,7 +60,7 @@ internal sealed partial class Match
                 if (order.Kind == OrderKind.Attack && !Enemy(order.Slot, target.Owner)) return "Choose a hostile target.";
                 return actors.All(b => DamagePercent(Role(b).DamageId, target) > 0) ? "" : "Weapon cannot hit this target.";
             case OrderKind.Repair:
-                return actors.All(b => b.RoleId == "build.dozer") && known && Allied(order.Slot, target!.Owner) && Role(target).IsBuilding && target.Complete ? "" : "Choose an owned or allied building to repair.";
+                return actors.All(b => b.RoleId == "build.dozer") && known && Allied(order.Slot, target!.Owner) && Role(target).IsBuilding ? "" : "Choose an owned or allied building to repair.";
             case OrderKind.Capture:
                 if (!player.Upgrades.Contains("up.capture") || actors.Any(b => b.RoleId != "inf.rifle")) return "Capture research required.";
                 return known && Enemy(order.Slot, target!.Owner) && Role(target).IsBuilding && !Role(target).IsNeutral && target.Complete ? "" : "Choose a visible enemy building.";
@@ -134,7 +134,7 @@ internal sealed partial class Match
                     }
                     break;
                 default:
-                    if (!order.Append && order.Kind != OrderKind.Waypoint) Abort(actor);
+                    if (!order.Append && order.Kind != OrderKind.Waypoint) Abort(actor, cancelSite: order.Kind == OrderKind.Stop);
                     if (order.Kind != OrderKind.Stop) actor.Actions.Add(order with { ActorIds = new[] { id }, Append = false, Position = TakesEntityTarget(order.Kind) && order.TargetId != 0 && Bodies.TryGetValue(order.TargetId, out var target) && (target.Owner == order.Slot || Visible(order.Slot, target.Pos)) ? target.Pos : order.Position });
                     break;
             }
@@ -145,12 +145,16 @@ internal sealed partial class Match
         if (Players.TryGetValue(body.Owner, out var player)) foreach (var q in body.Queue) player.Money += q.Paid * C.Rules.QueueRefundPercent / 100;
         body.Queue.Clear();
     }
-    private void Abort(Body body)
+    private void Abort(Body body, bool cancelSite = false)
     {
         if (body.ConstructionId != 0 && Bodies.TryGetValue(body.ConstructionId, out var site))
         {
-            Players[body.Owner].Money += Role(site).Cost * C.Rules.ConstructionCancelRefundPercent / 100;
-            Destroy(site, null);
+            site.BuilderId = 0;
+            if (cancelSite)
+            {
+                Players[body.Owner].Money += Role(site).Cost * C.Rules.ConstructionCancelRefundPercent / 100;
+                Destroy(site, null);
+            }
         }
         ReleaseDock(body); body.Timer = 0; body.CaptureLeft = 0; body.ConstructionId = 0;
         body.AutoGather = false; body.Actions.Clear(); body.Path.Clear(); body.TargetId = 0; body.Activity = EntityActivity.Idle; body.Destination = body.Pos;

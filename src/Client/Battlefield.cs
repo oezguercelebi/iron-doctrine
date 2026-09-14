@@ -355,7 +355,7 @@ public partial class Battlefield : Node3D
     private static StandardMaterial3D Glow(Color color) => new() { AlbedoColor = color, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, NoDepthTest = false };
     private static MeshInstance3D Ring(float radius, Color color) => new() { Mesh = new TorusMesh { InnerRadius = radius - .035f, OuterRadius = radius + .035f, Rings = 36, RingSegments = 6 }, MaterialOverride = Glow(color), Position = new Vector3(0, .06f, 0) };
 
-    public void SetGhost(string roleId, WorldPoint position, bool allowed)
+    public void SetGhost(string roleId, WorldPoint position, bool allowed, int facing = 0)
     {
         if (string.IsNullOrEmpty(roleId)) { _ghost?.QueueFree(); _ghost = null; _ghostRole = ""; return; }
         if (_ghostRole != roleId || _ghost == null)
@@ -370,6 +370,7 @@ public partial class Battlefield : Node3D
             AddChild(_ghost);
         }
         _ghost.Position = ToWorld(position) + new Vector3(0, .06f, 0);
+        _ghost.Rotation = new Vector3(0, Mathf.DegToRad(facing), 0);
         var color = allowed ? new Color(.35f, 1, .72f, .45f) : new Color(1, .28f, .22f, .45f);
         var material = new StandardMaterial3D { AlbedoColor = color, Transparency = BaseMaterial3D.TransparencyEnum.Alpha, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded };
         Override(_ghost, material);

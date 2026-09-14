@@ -34,6 +34,9 @@ public partial class MatchClient : Node3D
     private float _proofSpeed = 1;
     private double _resultTime;
     private bool _proofSaved;
+    private bool _placeHeld;
+    private Vector2 _placeOrigin;
+    private int _placeFacing;
     private bool _diag;
     private bool _overlay;
     private string _lastBox = "none";
@@ -120,11 +123,12 @@ public partial class MatchClient : Node3D
             if (_mode == OrderKind.Build && _buildRole.Length > 0)
             {
                 int builder = OwnedSelection().FirstOrDefault();
-                var point = _field.ScreenPoint(mouse);
+                var point = _placeHeld ? _field.ScreenPoint(_placeOrigin) : _field.ScreenPoint(mouse);
+                if (_placeHeld) _placeFacing = FacingFrom(_placeOrigin, mouse);
                 var placement = _match.CanPlace(_slot, builder, _buildRole, point);
-                _hud.PlacementText = placement.Allowed ? "Legal footprint · Left click to construct" : placement.Reason;
+                _hud.PlacementText = placement.Allowed ? "Legal footprint · Hold and drag to face, release to build" : placement.Reason;
                 _hud.PlacementAllowed = placement.Allowed;
-                _field.SetGhost(_buildRole, point, placement.Allowed && !_hud.BlocksWorld(mouse));
+                _field.SetGhost(_buildRole, point, placement.Allowed && !_hud.BlocksWorld(_placeHeld ? _placeOrigin : mouse), _placeFacing);
             }
         }
         _noticeLife -= delta;
@@ -195,7 +199,7 @@ public partial class MatchClient : Node3D
         if (mouse.ButtonIndex == MouseButton.Right && mouse.Pressed)
         {
             if (_hud.Click(mouse.Position, true)) return;
-            if (_mode != null) { ClearMode(); return; }
+            if (_mode != null || _placeHeld) { ClearMode(); return; }
             ContextOrder(_field.Pick(mouse.Position), _field.ScreenPoint(mouse.Position), mouse.ShiftPressed);
             return;
         }
@@ -203,6 +207,13 @@ public partial class MatchClient : Node3D
         if (mouse.Pressed)
         {
             if (_hud.Click(mouse.Position, false)) return;
+            if (_mode == OrderKind.Build)
+            {
+                _placeHeld = true;
+                _placeOrigin = mouse.Position;
+                _placeFacing = 0;
+                return;
+            }
             if (_mode != null)
             {
                 ApplyMode(_field.Pick(mouse.Position), _field.ScreenPoint(mouse.Position), mouse.ShiftPressed);
@@ -213,6 +224,12 @@ public partial class MatchClient : Node3D
             _dragOrigin = mouse.Position;
             _hud.DragStart = mouse.Position;
             _hud.DragEnd = mouse.Position;
+        }
+        else if (_placeHeld)
+        {
+            _placeHeld = false;
+            _placeFacing = FacingFrom(_placeOrigin, mouse.Position);
+            ApplyMode(_field.Pick(_placeOrigin), _field.ScreenPoint(_placeOrigin), mouse.ShiftPressed, _placeFacing);
         }
         else if (_leftDown)
         {
@@ -417,11 +434,11 @@ public partial class MatchClient : Node3D
         if (action == "stop") { Submit(OrderKind.Stop, actors); ClearMode(); return; }
         _mode = action switch { "move" => OrderKind.Move, "attack" => OrderKind.Attack, "attackmove" => OrderKind.AttackMove, "guard" => OrderKind.Guard, "waypoint" => OrderKind.Waypoint, "force" => OrderKind.ForceAttack, "repair" => OrderKind.Repair, "gather" => OrderKind.Gather, "enter" => OrderKind.Enter, "capture" => OrderKind.Capture, "exit" => OrderKind.Exit, "rally" => OrderKind.Rally, "build" => OrderKind.Build, "sell" => OrderKind.Sell, _ => null };
         _buildRole = action == "build" ? product : "";
-        _hud.ModeText = action == "build" ? "PLACE  /  " + _match.Config.Role(product).Label.ToUpperInvariant() : _mode switch { OrderKind.AttackMove => "ATTACK-MOVE", OrderKind.ForceAttack => "FORCE FIRE — ALLIES CAN BE HIT", OrderKind.Waypoint => "APPEND WAYPOINT", OrderKind.Sell => "SELL — click your building", OrderKind.Guard => "GUARD — UNIT OR POINT", _ => _mode?.ToString().ToUpperInvariant() ?? "" };
+        _hud.ModeText = action == "build" ? "PLACE  /  " + _match.Config.Role(product).Label.ToUpperInvariant() + "  ·  HOLD-DRAG FACE" : _mode switch { OrderKind.AttackMove => "ATTACK-MOVE", OrderKind.ForceAttack => "FORCE FIRE — ALLIES CAN BE HIT", OrderKind.Waypoint => "APPEND WAYPOINT", OrderKind.Sell => "SELL — click your building", OrderKind.Guard => "GUARD — UNIT OR POINT", _ => _mode?.ToString().ToUpperInvariant() ?? "" };
         _hud.PlacementText = "";
     }
 
-    private void ApplyMode(EntitySnapshot? target, WorldPoint point, bool append)
+    private void ApplyMode(EntitySnapshot? target, WorldPoint point, bool append, int facing = 0)
     {
         if (_mode == null) return;
         var actors = OwnedSelection();
@@ -445,13 +462,13 @@ public partial class MatchClient : Node3D
             var legal = _match.CanPlace(_slot, actors[0], _buildRole, point);
             if (!legal.Allowed) { Notify(legal.Reason); _audio.Notify("sfx.invalid"); return; }
         }
-        bool accepted = Submit(_mode.Value, actors, target?.Id ?? 0, point, _buildRole, append);
+        bool accepted = Submit(_mode.Value, actors, target?.Id ?? 0, point, _buildRole, append, facing: facing);
         if (accepted && !append && _mode != OrderKind.Waypoint) ClearMode();
     }
 
-    private bool Submit(OrderKind kind, int[] actors, int target = 0, WorldPoint position = default, string product = "", bool append = false, int queueIndex = 0)
+    private bool Submit(OrderKind kind, int[] actors, int target = 0, WorldPoint position = default, string product = "", bool append = false, int queueIndex = 0, int facing = 0)
     {
-        var receipt = _match.Submit(CommandIntent.Create(_slot, kind, actors, target, position, product, append, queueIndex));
+        var receipt = _match.Submit(CommandIntent.Create(_slot, kind, actors, target, position, product, append, queueIndex, facing));
         if (!receipt.Accepted) { Notify(receipt.Reason); _audio.Notify("sfx.invalid"); return false; }
         if (kind == OrderKind.Rally) _audio.Notify("sfx.rally");
         if (kind == OrderKind.Build) _audio.Notify("sfx.place");
@@ -499,7 +516,15 @@ public partial class MatchClient : Node3D
         _hud.DiagText = $"DIAG  sel={_selection.Count} box={_lastBox}  moving={moving} held={stuck}  sim stuck={BehaviorLog.StuckEvents} osc={BehaviorLog.OscillateEvents}  F3";
     }
     private void Notify(string text) { _hud.Notice = text; _noticeLife = 5; }
-    private void ClearMode() { _mode = null; _buildRole = ""; _hud.ModeText = ""; _hud.PlacementText = ""; _field.SetGhost("", default, false); }
+    private void ClearMode() { _mode = null; _buildRole = ""; _placeHeld = false; _placeFacing = 0; _hud.ModeText = ""; _hud.PlacementText = ""; _field.SetGhost("", default, false); }
+    private static int FacingFrom(Vector2 origin, Vector2 current)
+    {
+        if (origin.DistanceTo(current) < 16) return 0;
+        // World +Z is facing 0 (toward the camera). Screen down is +Z.
+        float dx = current.X - origin.X, dy = current.Y - origin.Y;
+        int yaw = (int)Math.Round(Math.Atan2(dx, dy) * 180 / Math.PI);
+        return yaw < 0 ? yaw + 360 : yaw;
+    }
     private void FocusSelection()
     {
         var selected = _snapshot.Entities.Where(e => _selection.Contains(e.Id)).ToArray();

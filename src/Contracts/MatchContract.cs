@@ -39,7 +39,7 @@ public sealed record MatchSetup
 // CancelQueue: QueueIndex indexes the producer's snapshot Queue. ProductId is catalog id for Build/Queue.
 // ForceAttack may name an entity or a ground position; Attack requires currently visible hostile target.
 public sealed record MatchOrder(int Slot, OrderKind Kind, int[] ActorIds, int TargetId = 0,
-    WorldPoint Position = default, string ProductId = "", bool Append = false, int QueueIndex = 0);
+    WorldPoint Position = default, string ProductId = "", bool Append = false, int QueueIndex = 0, int Facing = 0);
 public sealed record OrderReceipt(bool Accepted, string Reason);
 public sealed record PlacementResult(bool Allowed, string Reason);
 

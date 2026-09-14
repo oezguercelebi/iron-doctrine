@@ -64,7 +64,7 @@ internal sealed partial class Match : IMatch
     internal Body Spawn(string roleId, int owner, WorldPoint position, bool complete = true)
     {
         var r = roles[roleId];
-        var body = new Body { Id = nextId++, RoleId = roleId, Owner = owner, Pos = position, Destination = position, Rally = position, Hp = r.Hp, Complete = complete, FreeGathererGranted = complete, BuildLeft = complete ? 0 : r.BuildTicks, BuildTotal = r.BuildTicks };
+        var body = new Body { Id = nextId++, RoleId = roleId, Owner = owner, Pos = position, Destination = position, Rally = position, Hp = r.Hp, Complete = complete, FreeGathererGranted = complete, BuildLeft = complete ? 0 : r.BuildTicks, BuildTotal = r.BuildTicks, Facing = 0 };
         Bodies.Add(body.Id, body);
         if (complete) body.Rally = FrontOf(body);
         if (Obstacle(body)) topology++;
@@ -75,13 +75,11 @@ internal sealed partial class Match : IMatch
     {
         if (!Produces(building.RoleId)) return building.Pos;
         int gap = Role(building).Radius + C.Rules.SpawnOffset;
-        foreach (var point in new[]
-        {
-            new WorldPoint(building.Pos.X, building.Pos.Z + gap),
-            new WorldPoint(building.Pos.X, building.Pos.Z - gap),
-            new WorldPoint(building.Pos.X + gap, building.Pos.Z),
-            new WorldPoint(building.Pos.X - gap, building.Pos.Z)
-        })
+        int yaw = ((building.Facing % 360) + 360) % 360;
+        double rad = yaw * Math.PI / 180.0;
+        var facing = new WorldPoint(building.Pos.X + (int)Math.Round(Math.Sin(rad) * gap), building.Pos.Z + (int)Math.Round(Math.Cos(rad) * gap));
+        var options = new[] { facing, new WorldPoint(building.Pos.X, building.Pos.Z + gap), new WorldPoint(building.Pos.X, building.Pos.Z - gap), new WorldPoint(building.Pos.X + gap, building.Pos.Z), new WorldPoint(building.Pos.X - gap, building.Pos.Z) };
+        foreach (var point in options)
             if (InBounds(point) && TerrainFits(point, C.Map.CellSize)) return point;
         return building.Pos;
     }
@@ -140,6 +138,7 @@ internal sealed partial class Match : IMatch
         public int Id, Owner, Hp, BuildLeft, BuildTotal, BuilderId, ConstructionId;
         public string RoleId = "";
         public WorldPoint Pos, Destination, Rally;
+        public int Facing;
         public bool Complete, Powered = true, FreeGathererGranted, AutoGather = true;
         public EntityActivity Activity;
         public int TargetId, Cargo, Supplies, LoadingId, ContainerId, CaptureLeft, Timer, Cooldown, Rank, Experience, GatherDockId;

@@ -20,7 +20,9 @@ public static class ReviewRegressionProof
             ("powered defenses execute attack and force-attack orders", DefenseOrders),
             ("stopped cargo can be delivered after every dock empties", StrandedCargo),
             ("unload stays within local reach of the carrier", LocalUnload),
-            ("ghost rejects a mobile unit on the pad", GhostOccupancy) })
+            ("ghost rejects a mobile unit on the pad", GhostOccupancy),
+            ("new build leaves the previous scaffold", AbandonedScaffold),
+            ("placed facing aims default rally", FacingRally) })
         {
             try { test.Run(); Console.WriteLine("PASS review regression: " + test.Name); }
             catch (InvalidOperationException e) { failures.Add(test.Name + ": " + e.Message); Console.WriteLine("FAIL review regression: " + failures[^1]); }
@@ -130,5 +132,35 @@ public static class ReviewRegressionProof
         unit.Pos = new(7000, 4500); m.Step();
         Need(m.CanPlace(0, dozer.Id, "power.fusion", pad).Allowed, "Ghost must allow the pad after the unit leaves.");
         Need(m.CanPlace(0, dozer.Id, "power.fusion", dozer.Pos).Allowed, "Ghost must ignore the builder that will step off.");
+    }
+    private static void AbandonedScaffold()
+    {
+        var m = New(); var dozer = m.Bodies.Values.Single(b => b.Owner == 0 && b.RoleId == "build.dozer");
+        var pad = new WorldPoint(dozer.Pos.X + 800, dozer.Pos.Z);
+        Send(m, OrderKind.Build, dozer, position: pad, product: "power.fusion");
+        Step(m, 50);
+        var site = m.Bodies.Values.Single(b => b.RoleId == "power.fusion" && b.Owner == 0);
+        Need(!site.Complete, "Fixture must still be building.");
+        Send(m, OrderKind.Build, dozer, position: new(6500, 4500), product: "prod.barracks");
+        m.Step();
+        Need(m.Bodies.ContainsKey(site.Id) && !site.Complete && site.BuilderId == 0, "A new Build must leave the unfinished site.");
+        Need(dozer.ConstructionId != site.Id, "Dozer must detach from the abandoned site.");
+        Send(m, OrderKind.Stop, dozer);
+        m.Step();
+        Need(m.Bodies.ContainsKey(site.Id), "Stop on a detached dozer must not delete the abandoned scaffold.");
+        Send(m, OrderKind.Repair, dozer, site.Id);
+        Step(m, config.Role("power.fusion").BuildTicks + config.Rules.TickRate * 8);
+        Need(site.Complete, "A dozer must be able to finish an abandoned site.");
+    }
+    private static void FacingRally()
+    {
+        var m = New(); var barracks = m.Spawn("prod.barracks", 0, new(6000, 3000));
+        barracks.Facing = 90; barracks.Rally = m.FrontOf(barracks); m.Step();
+        Need(barracks.Rally.X > barracks.Pos.X && Math.Abs(barracks.Rally.Z - barracks.Pos.Z) < config.Role("prod.barracks").Radius, "Facing 90 must put rally toward +X.");
+        var dozer = m.Bodies.Values.Single(b => b.Owner == 0 && b.RoleId == "build.dozer");
+        Need(m.Submit(new MatchOrder(0, OrderKind.Build, new[] { dozer.Id }, Position: new(dozer.Pos.X + 900, dozer.Pos.Z), ProductId: "prod.barracks", Facing: 180)).Accepted, "Faced barracks must place.");
+        Step(m, config.Role("prod.barracks").BuildTicks + config.Rules.TickRate * 12);
+        var second = m.Bodies.Values.Single(b => b.RoleId == "prod.barracks" && b.Id != barracks.Id && b.Complete);
+        Need(second.Facing == 180 && second.Rally.Z < second.Pos.Z, "Released facing 180 must put rally toward -Z.");
     }
 }

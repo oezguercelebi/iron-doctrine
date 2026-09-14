@@ -44,7 +44,7 @@ No StarCraft-style attack/defend/hold stances. Artillery that must unpack (Forge
 ## 3. Construction
 
 - Buildings come from a **builder unit**, not a construction yard.
-- **Aegis / Forge:** expensive dozer. One building per dozer. Repairs, clears mines.
+- **Aegis / Forge:** expensive dozer. One building per dozer at a time. Repairs, clears mines. Place with click-hold-drag to set facing (front / rally). A new Build leaves the scaffold; Stop or the dozer dying cancels it. Another dozer can finish an abandoned site.
 - **Veil:** cheap worker. Builds *and* harvests. Many workers = many buildings at once.
 - Place anywhere with space (and, for Aegis/Forge, eventual power to *run* it). Forward bases are legal.
 - Ghost is blocked by terrain, other buildings, and steep cliffs unless a role says it can climb (Veil saboteur analog).

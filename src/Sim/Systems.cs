@@ -92,11 +92,19 @@ internal sealed partial class Match
         {
             if (MoveToward(builder, action.Position, role.Radius + Role(builder).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) return;
             if (!ClearConstructionFootprint(builder, action.Position, role.Radius)) return;
-            // Revalidate full world only on arrival, after the builder has cleared its footprint.
-            if (!HasPrerequisites(builder.Owner, role) || Players[builder.Owner].Money < role.Cost || !GroundFits(action.Position, role.Radius, units: true) || Bodies.Count >= C.Rules.HardEntityCap)
-            { if (Players[builder.Owner].Money < role.Cost) Event("vo.funds", builder.Owner, builder); FinishAction(builder); return; }
-            Players[builder.Owner].Money -= role.Cost;
-            var site = Spawn(role.Id, builder.Owner, action.Position, false); site.Hp = 1; site.BuilderId = builder.Id;
+            var existing = Bodies.Values.FirstOrDefault(b => !b.Complete && b.Owner == builder.Owner && b.RoleId == role.Id && Near(b.Pos, action.Position, role.Radius));
+            Body site;
+            if (existing != null)
+            {
+                site = existing; site.BuilderId = builder.Id; site.Facing = action.Facing != 0 ? action.Facing : site.Facing;
+            }
+            else
+            {
+                if (!HasPrerequisites(builder.Owner, role) || Players[builder.Owner].Money < role.Cost || !GroundFits(action.Position, role.Radius, units: true) || Bodies.Count >= C.Rules.HardEntityCap)
+                { if (Players[builder.Owner].Money < role.Cost) Event("vo.funds", builder.Owner, builder); FinishAction(builder); return; }
+                Players[builder.Owner].Money -= role.Cost;
+                site = Spawn(role.Id, builder.Owner, action.Position, false); site.Hp = 1; site.BuilderId = builder.Id; site.Facing = action.Facing;
+            }
             builder.ConstructionId = site.Id; builder.TargetId = site.Id; builder.Path.Clear();
             return;
         }
@@ -180,7 +188,14 @@ internal sealed partial class Match
     }
     private void Repair(Body builder, MatchOrder action)
     {
-        if (!Bodies.TryGetValue(action.TargetId, out var building) || !Allied(builder.Owner, building.Owner) || !building.Complete) { FinishAction(builder); return; }
+        if (!Bodies.TryGetValue(action.TargetId, out var building) || !Allied(builder.Owner, building.Owner)) { FinishAction(builder); return; }
+        if (!building.Complete)
+        {
+            if (builder.RoleId != "build.dozer") { FinishAction(builder); return; }
+            builder.ConstructionId = building.Id; building.BuilderId = builder.Id;
+            Build(builder, action with { Kind = OrderKind.Build, ProductId = building.RoleId, Position = building.Pos, Facing = building.Facing });
+            return;
+        }
         builder.TargetId = building.Id; builder.Activity = EntityActivity.Repairing;
         if (MoveToward(builder, building.Pos, Role(building).Radius + C.Rules.InteractionRange) != TravelResult.Arrived) return;
         int hp = Math.Min(C.Rules.RepairHpPerTick, MaxHp(building) - building.Hp);

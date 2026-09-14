@@ -29,7 +29,8 @@ public partial class FieldAudio : Node
                 "vo.power" => (310, 220, .3f), "vo.funds" => (270, 180, .2f),
                 "vo.building_done" => (520, 780, .27f), "vo.unit_ready" => (640, 880, .18f),
                 "vo.under_attack" => (850, 470, .32f), "vo.victory" => (660, 990, .65f),
-                "vo.defeat" => (330, 160, .65f), "sfx.invalid" => (180, 120, .13f), _ => (720, 940, .06f)
+                "vo.defeat" => (330, 160, .65f), "sfx.invalid" => (180, 120, .13f),
+                "sfx.rally" => (440, 660, .1f), "sfx.place" => (980, 1240, .08f), _ => (720, 940, .06f)
             };
             const int rate = 22050;
             int samples = (int)(rate * seconds);

@@ -249,8 +249,8 @@ public partial class FieldHud : Control
         DrawLine(new Vector2(x - 14, y + 17), new Vector2(x - 14, Size.Y - 17), _line);
         Text(new Vector2(x, y + 24), "COMMAND", 11, _accent);
         Text(new Vector2(x + 105, y + 24), "SHIFT APPENDS ORDERS", 10, _muted);
-        var selected = SelectionState.Ordered(Snapshot, Selection);
-        if (selected.Length == 0 || selected.Any(e => e.OwnerSlot != Snapshot.ViewerSlot))
+        var selected = SelectionState.Ordered(Snapshot, Selection).Where(e => e.OwnerSlot == Snapshot.ViewerSlot).ToArray();
+        if (selected.Length == 0)
         {
             Text(new Vector2(x, y + 69), "Your selection determines the available orders.", 16, _muted);
             Text(new Vector2(x, y + 106), "Select your Dozer to place buildings. Select a producer to train units.", 13, _muted);
@@ -270,11 +270,11 @@ public partial class FieldHud : Control
             if (selected.All(e => Config.Role(e.RoleId).Damage > 0)) actions.Add(("ATTACK  Z", "attack", "Attack a visible enemy; available after capture research"));
             actions.Add(("ATTACK-MOVE  Q", "attackmove", "Engage enemies on the way to a point"));
             actions.Add(("STOP  X", "stop", "Stop the current order and clear its queue"));
-            actions.Add(("GUARD  G", "guard", "Guard a point and engage nearby enemies"));
+            actions.Add(("GUARD  G", "guard", "Guard a unit or a point"));
             actions.Add(("WAYPOINT  T", "waypoint", "Append a movement waypoint"));
             if (selected.All(e => Config.Role(e.RoleId).Damage > 0)) actions.Add(("FORCE FIRE  F", "force", "Attack ground or any target; can harm allies"));
         }
-        if (buildings && complete) actions.Add(("RALLY  Y", "rally", "Set where produced units move"));
+        if (buildings && complete && selected.All(e => Config.Roles.Any(r => r.ProducerId == e.RoleId))) actions.Add(("RALLY  Y", "rally", "Set where produced units move"));
         if (selected.All(e => Config.Role(e.RoleId).AbilityIds.Contains("ab.sell"))) actions.Add(("SELL  Del", "sell", $"Sell selected buildings; refund {Config.Rules.SellRefundPercent}%"));
         if (builders) actions.Add(("REPAIR  R", "repair", "Repair a friendly building; consumes funds"));
         if (selected.All(e => Config.Role(e.RoleId).AbilityIds.Contains("ab.gather"))) actions.Add(("GATHER", "gather", "Choose a supply dock; deliveries go to your own Drop-off"));

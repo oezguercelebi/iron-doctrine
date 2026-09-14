@@ -225,7 +225,8 @@ internal sealed partial class Match
             if (!Bodies.TryGetValue(id, out var infantry) || !Bodies.TryGetValue(infantry.ContainerId, out var container)) continue;
             // Unload is local to its container; a map click cannot teleport passengers across the map.
             var anchor = Near(container.Pos, desired, C.Rules.InteractionRange + Role(container).Radius) ? desired : Toward(container.Pos, desired, C.Rules.InteractionRange + Role(container).Radius);
-            var point = FindFree(anchor, Role(infantry), infantry.Id);
+            int max = C.Rules.InteractionRange + Role(container).Radius + Role(infantry).Radius + C.Map.CellSize;
+            var point = FindFree(anchor, Role(infantry), infantry.Id, max, container.Pos);
             if (point == null) continue;
             container.Occupants.Remove(id); infantry.ContainerId = 0; infantry.Pos = point.Value; infantry.Destination = point.Value; infantry.Activity = EntityActivity.Idle;
             if (container.RoleId == "map.garrison" && container.Occupants.Count == 0) { Abort(container); container.Owner = -1; }

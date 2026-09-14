@@ -161,18 +161,22 @@ internal sealed partial class Match
         MoveToward(builder, access.Value, 0);
         return !Near(builder.Pos, site, clearance);
     }
-    private WorldPoint? FindFree(WorldPoint requested, RoleConfig role, int ignore = 0)
+    private WorldPoint? FindFree(WorldPoint requested, RoleConfig role, int ignore = 0, int maxDistance = int.MaxValue, WorldPoint? origin = null)
     {
-        if (role.IsFlying && InBounds(requested)) return requested;
-        if (GroundFits(requested, role.Radius, ignore, true)) return requested;
+        var from = origin ?? requested;
+        bool InRange(WorldPoint p) => maxDistance == int.MaxValue || Near(p, from, maxDistance);
+        if (role.IsFlying && InBounds(requested) && InRange(requested)) return requested;
+        if (GroundFits(requested, role.Radius, ignore, true) && InRange(requested)) return requested;
         var cell = C.Map.CellSize;
-        for (int ring = 1; ring < Math.Max(C.Map.WidthCells, C.Map.HeightCells); ring++)
+        int maxRing = Math.Max(C.Map.WidthCells, C.Map.HeightCells);
+        if (maxDistance != int.MaxValue) maxRing = Math.Min(maxRing, maxDistance / cell + Root(Distance2(requested, from)) / cell + 2);
+        for (int ring = 1; ring < maxRing; ring++)
             for (int z = -ring; z <= ring; z++)
                 for (int x = -ring; x <= ring; x++)
                 {
                     if (Math.Abs(x) != ring && Math.Abs(z) != ring) continue;
                     var point = new WorldPoint(requested.X + x * cell, requested.Z + z * cell);
-                    if (GroundFits(point, role.Radius, ignore, true)) return point;
+                    if (InRange(point) && GroundFits(point, role.Radius, ignore, true)) return point;
                 }
         return null;
     }

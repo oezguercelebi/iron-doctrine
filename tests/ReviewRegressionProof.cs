@@ -18,7 +18,9 @@ public static class ReviewRegressionProof
             ("blocked paths cannot repair, capture, enter or build remotely", RemoteInteractions),
             ("owned occupied garrisons prevent elimination", OccupiedGarrison),
             ("powered defenses execute attack and force-attack orders", DefenseOrders),
-            ("stopped cargo can be delivered after every dock empties", StrandedCargo) })
+            ("stopped cargo can be delivered after every dock empties", StrandedCargo),
+            ("unload stays within local reach of the carrier", LocalUnload),
+            ("ghost rejects a mobile unit on the pad", GhostOccupancy) })
         {
             try { test.Run(); Console.WriteLine("PASS review regression: " + test.Name); }
             catch (InvalidOperationException e) { failures.Add(test.Name + ": " + e.Message); Console.WriteLine("FAIL review regression: " + failures[^1]); }
@@ -26,10 +28,10 @@ public static class ReviewRegressionProof
         if (failures.Count != 0) throw new InvalidOperationException(string.Join("\n", failures));
     }
     private static void Need(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
-    private static Match New(bool enclosed = false)
+    private static Match New(bool enclosed = false, bool clutter = false)
     {
-        var walls = enclosed ? new[] { new TerrainRect(40, 10, 8, 1, "ter.unbuildable"), new TerrainRect(40, 17, 8, 1, "ter.unbuildable"), new TerrainRect(40, 11, 1, 6, "ter.unbuildable"), new TerrainRect(47, 11, 1, 6, "ter.unbuildable") } : Array.Empty<TerrainRect>();
-        var c = config with { Map = config.Map with { Objects = Array.Empty<MapObjectConfig>(), Terrain = walls } };
+        var walls = enclosed ? new[] { new TerrainRect(40, 10, 8, 1, "ter.unbuildable"), new TerrainRect(40, 17, 8, 1, "ter.unbuildable"), new TerrainRect(40, 11, 1, 6, "ter.unbuildable"), new TerrainRect(47, 11, 1, 6, "ter.unbuildable") } : clutter ? config.Map.Terrain : Array.Empty<TerrainRect>();
+        var c = config with { Map = config.Map with { Objects = clutter ? config.Map.Objects : Array.Empty<MapObjectConfig>(), Terrain = walls } };
         var setup = c.CreateSetup() with { Fog = false, Slots = c.DefaultSlots.Select(s => s.Occupant == Occupant.AI ? s with { Occupant = Occupant.Player } : s).ToArray() };
         return (Match)new MatchFactory().Create(c, setup);
     }
@@ -107,5 +109,26 @@ public static class ReviewRegressionProof
             var infantry = m.Spawn("inf.rifle", 0, new(4000, 2000)); m.Step();
             Need(m.Submit(new MatchOrder(0, OrderKind.Enter, new[] { infantry.Id }, gatherer.Id)).Accepted, "Delivered gatherer must become available as infantry transport.");
         }
+    }
+    private static void LocalUnload()
+    {
+        var m = New(clutter: true);
+        var carrier = m.Spawn("eco.chinook", 0, new(4000, 5000)); carrier.AutoGather = false;
+        var rifle = m.Spawn("inf.rifle", 0, new(3700, 5000)); m.Step();
+        Send(m, OrderKind.Enter, rifle, carrier.Id); m.Step();
+        Need(rifle.ContainerId == carrier.Id, "Fixture failed to board.");
+        carrier.Pos = rifle.Pos = new(5150, 2300);
+        Send(m, OrderKind.Exit, carrier, position: new(5150, 0)); m.Step();
+        int reach = config.Rules.InteractionRange + config.Role("eco.chinook").Radius + config.Role("inf.rifle").Radius + config.Map.CellSize;
+        Need(Distance2(rifle.Pos, carrier.Pos) <= (long)reach * reach, "Unload teleported beyond local reach of the carrier.");
+    }
+    private static void GhostOccupancy()
+    {
+        var m = New(); var dozer = m.Bodies.Values.Single(b => b.Owner == 0 && b.RoleId == "build.dozer");
+        var pad = new WorldPoint(5000, 4500); var unit = m.Spawn("inf.rifle", 0, pad); m.Step();
+        Need(!m.CanPlace(0, dozer.Id, "power.fusion", pad).Allowed, "Ghost must reject a mobile unit standing on the pad.");
+        unit.Pos = new(7000, 4500); m.Step();
+        Need(m.CanPlace(0, dozer.Id, "power.fusion", pad).Allowed, "Ghost must allow the pad after the unit leaves.");
+        Need(m.CanPlace(0, dozer.Id, "power.fusion", dozer.Pos).Allowed, "Ghost must ignore the builder that will step off.");
     }
 }

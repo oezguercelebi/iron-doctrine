@@ -48,8 +48,8 @@ def accessor(doc,blob,index):
     return [struct.unpack_from("<"+fmt*count,blob,start+i*stride) for i in range(a["count"])]
 
 
-# Reject armatures / skeletal walk cycles. Zero glTF animations are allowed (current assets;
-# client-driven root bob and chinook rotor spin). Optional allowlist: gatherer rotor_left/rotor_right
+# Reject armatures / skeletal walk cycles. Empty glTF clips are allowed (shipped path:
+# client root-bob and chinook rotor spin). Optional allowlist: gatherer rotor_left/rotor_right
 # rotation clips; infantry/vehicle root-channel translation/rotation without skins. Structures stay static.
 STATIC={"fusion","command","barracks","factory","dropoff","aa_turret","dock","garrison","rocks"}
 ROOT_BOB={"rifle","rocket","dozer","tank","scout"}

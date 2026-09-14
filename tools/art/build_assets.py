@@ -4,6 +4,10 @@ Run: blender --background --factory-startup --python tools/art/build_assets.py
 Optional arguments after --: --only tank gatherer --render
 Geometry measurements below are artistic dimensions, never gameplay balance.
 Blender +Y is forward; the glTF exporter converts this to Godot -Z.
+
+No armatures. export_animations stays False unless an allowlisted gatherer
+rotor rotation clip is added. Runtime spins rotor_* and root-bobs infantry
+and vehicles. Structures stay static.
 """
 from __future__ import annotations
 
@@ -756,6 +760,7 @@ def main():
         bounds_max=[round(hi.x,4),round(hi.z,4),round(-lo.y,4)]
         tris=sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in objects)
         bpy.ops.object.select_all(action="SELECT")
+        # Keep False unless exporting an allowlisted gatherer rotor clip.
         bpy.ops.export_scene.gltf(filepath=str(MODELS/(name+".glb")),export_format="GLB",
             use_selection=True,export_yup=True,export_apply=True,export_materials="EXPORT",
             export_cameras=False,export_lights=False,export_animations=False,export_extras=False)

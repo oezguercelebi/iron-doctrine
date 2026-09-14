@@ -31,7 +31,10 @@ the `.blend` sources and `.glb` models.
   origins at the rotor hubs; rotate them about local Y in Godot. The static
   `body` remains separate. Rotors have modeled blades without alpha textures.
 - Meshes supply appearance only. They contain no collision bodies, scripts,
-  gameplay numbers, cameras, lights, animations, or outside file references.
+  gameplay numbers, cameras, lights, or outside file references.
+- No authored glTF animation clips and no armatures. Runtime may rotate listed
+  assemblies (`rotor_left` and `rotor_right` on the gatherer) and root-bob
+  infantry and ground vehicles. Structures and map props stay static.
 
 | File | Catalog id | Visual role |
 | --- | --- | --- |

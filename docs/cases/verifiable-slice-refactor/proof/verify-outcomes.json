@@ -1,0 +1,95 @@
+{
+  "exit": 0,
+  "fail_closed": true,
+  "outcomes": [
+    {
+      "id": "acceptance",
+      "status": "pass",
+      "duration": 0.958,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/acceptance.log"
+      ],
+      "reason": "PASS acceptance: terrain walk/build, combat traces, scenario stubs",
+      "gate": true
+    },
+    {
+      "id": "assets",
+      "status": "pass",
+      "duration": 0.262,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/assets.log"
+      ],
+      "reason": "PASS 15 original assets; 100785 triangles; file validation (run in Blender for import proof)",
+      "gate": true
+    },
+    {
+      "id": "audit",
+      "status": "pending",
+      "duration": 4.192,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/audit.log",
+        "artifacts/behavior-audit.txt"
+      ],
+      "reason": "audit report only; stuck/oscillate counts are not a fail gate (Q5)",
+      "gate": false
+    },
+    {
+      "id": "client-gui",
+      "status": "pass",
+      "duration": 5.984,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/client-gui.log"
+      ],
+      "reason": "VERIFY_RENDER pending headless \u2014 dispatch/receipt only",
+      "gate": true
+    },
+    {
+      "id": "client-intent",
+      "status": "pass",
+      "duration": 1.438,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/client-intent.log"
+      ],
+      "reason": "helper-not-GUI; not client-input evidence",
+      "gate": true
+    },
+    {
+      "id": "render",
+      "status": "pending",
+      "duration": 0.0,
+      "artifacts": [],
+      "reason": "No controlled frame-capture gate in i-verify. Headless sim is not rendering evidence.",
+      "gate": false
+    },
+    {
+      "id": "review-harness",
+      "status": "pass",
+      "duration": 0.093,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/review-harness.log"
+      ],
+      "reason": "SELF-CHECK ok: missing proof \u2260 pass; BLOCK \u2260 pass; process exit 0 is not APPROVE",
+      "gate": true
+    },
+    {
+      "id": "sim",
+      "status": "pass",
+      "duration": 14.003,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/sim.log"
+      ],
+      "reason": "PASS full match: default human-v-AI setup, 17 public player orders, AI base/gather/compose/attack/defend, defeat at tick 2150, live twin 430E57195C2C7AFC9B97ACBB4CF493940852344F39C10E3EF03BCDC85C292BBA, sealed replay 430E57195C2C7AFC9B97ACBB4CF493940852344F39C10E3EF03BCDC85C292BBA, elapsed 10.8s",
+      "gate": true
+    },
+    {
+      "id": "verify.sealed_replay",
+      "status": "pass",
+      "duration": 1.183,
+      "artifacts": [
+        "/Users/oezguercelebi/GitHub/iron-doctrine/artifacts/verify/verify.sealed_replay.log"
+      ],
+      "reason": "PASS sealed replay: ticks=48 checkpoints=49 hash=858DDC5EA5B0CE481D705053E9203453828CE076A2033A872E3F61010B741EEB roundtrip; negative control diverged at tick 1 field StateHash",
+      "gate": true
+    }
+  ]
+}

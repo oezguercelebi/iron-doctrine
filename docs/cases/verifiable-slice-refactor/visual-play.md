@@ -12,13 +12,16 @@ Engineering evidence is separate. This package is for the user’s close-time ju
 6. Fog: no enemy queue/cargo/activity as facts; remembered buildings stale.
 7. HUD clicks do not issue world moves.
 
-## Captures (to be filled after I-client / render)
+## Captures (this machine)
+
+Platform: Darwin arm64, Godot 4.7.2 .NET, renderer `gl_compatibility`, OpenGL 4.1 Metal, Apple M1 Pro. Viewport 1440×900. Not a cross-GPU pixel gate.
 
 | File | Scenario | Notes |
 | --- | --- | --- |
-| pending | locomotion infantry | controlled camera 1440×900 |
-| pending | chinook rotors | |
-| pending | instant tracer vs cooldown-only negative | |
-| pending | HUD chrome vs world | |
+| `proof/frames/build-ghost.png` | `client.input_build_ghost_point` | Dozer constructing Fusion after real HUD card + PushInput. display=macOS. |
+| `proof/frames/pause.png` | `match.pause_freezes_clock` | Escape pause. |
+| `proof/frames/hud-chrome.png` | `client.no_fog_world_leak` | Chrome RMB vs world Move. |
+
+Not in these stills: infantry bob, chinook rotor spin, instant tracer vs cooldown. Those remain user feel plus client transform checks. Do not auto-approve regenerated goldens.
 
 Cross-GPU pixel identity is not the target. User accepts or overrules at close.

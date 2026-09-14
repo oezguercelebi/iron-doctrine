@@ -105,6 +105,12 @@ public sealed record PlayerSnapshot
     public string[] Upgrades { get; init; } = Array.Empty<string>();
 }
 public sealed record ProjectileSnapshot(int Id, int OwnerSlot, int SourceId, int TargetId, string DamageId, WorldPoint Position, WorldPoint TargetPosition);
+// Diagnostic/contract fields, not catalog rows. Instant fire shares the sim nextShotId space with missiles.
+public enum CombatTracePhase { Launch, Impact, Cancel }
+// Fog-filter: same rules as Projectiles — include only when Position is visible to the viewer;
+// SourceId is 0 unless the source is owned or its position is visible; TargetId is 0 and TargetPosition
+// is clamped to Position unless the target point is visible. Privileged traces must not leak fog.
+public sealed record CombatTrace(int Id, int SourceId, int TargetId, int OwnerSlot, string DamageId, string DeliveryId, CombatTracePhase Phase, WorldPoint Position, WorldPoint TargetPosition, int AppliedDamage);
 // Event ids are catalog feedback/voice ids; tick + ordinal are stable for deduplication. Events are current-tick only.
 public sealed record MatchEvent(long Tick, int Ordinal, string Id, int Slot, int EntityId, WorldPoint Position);
 public sealed record MatchSnapshot
@@ -119,7 +125,32 @@ public sealed record MatchSnapshot
     public PlayerSnapshot Player { get; init; } = new();
     public EntitySnapshot[] Entities { get; init; } = Array.Empty<EntitySnapshot>();
     public ProjectileSnapshot[] Projectiles { get; init; } = Array.Empty<ProjectileSnapshot>();
+    // Instant and missile shots. Default empty so existing snapshot initializers keep compiling.
+    public CombatTrace[] CombatTraces { get; init; } = Array.Empty<CombatTrace>();
     // Row major z * Map.WidthCells + x; no units/minimap blips from hidden cells.
     public Visibility[] Visibility { get; init; } = Array.Empty<Visibility>();
     public MatchEvent[] Events { get; init; } = Array.Empty<MatchEvent>();
 }
+
+// Movement diagnostics for BehaviorLog / audit. Not player-visible snapshot data.
+// Full-match proof must not fail solely on pre-calibration stuck/oscillate counts (Q5).
+// Client/presentation must not import Sim.BehaviorLog; classify with these types instead.
+public enum MovementClassification { Wait, Stuck, Oscillate }
+public sealed record MovementDiagnostic(int EntityId, string RoleId, int OwnerSlot, MovementClassification Classification, long Tick, WorldPoint Position, WorldPoint Destination, string Reason);
+
+// Sealed replay bundle field names (files and JSON keys). Outcome reports first divergent tick AND field.
+public static class ReplayBundle
+{
+    public const string Revision = "revision";
+    public const string PatchHash = "patch_hash";
+    public const string ConfigHash = "config_hash";
+    public const string ManifestHash = "manifest_hash";
+    public const string Toolchain = "toolchain";
+    public const string Seed = "seed";
+    public const string Setup = "setup";
+    public const string InputsJsonl = "inputs.jsonl";
+    public const string CheckpointsJsonl = "checkpoints.jsonl";
+    public const string OutcomeJson = "outcome.json";
+}
+public sealed record ReplayCheckpoint(long Tick, string StateHash);
+public sealed record ReplayOutcome(string StateHash, long? FirstDivergentTick, string FirstDivergentField);

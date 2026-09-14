@@ -28,6 +28,7 @@ public static class SeamConformance
         // Invalid submission must leave deterministic state untouched.
         Require(first.StateHash() == second.StateHash(), "rejected order has no sim effect");
         var spot = new WorldPoint(3300, 4500); // Original map fixture, not gameplay tuning.
+        // Terrain walk vs build for ter.unbuildable is owned by AcceptanceContracts (catalog TERRAIN.md), not this seam.
         Require(first.CanPlace(0, dozer.Id, "power.fusion", spot).Allowed, "legal construction place");
         var order = new MatchOrder(0, OrderKind.Build, new[] { dozer.Id }, Position: spot, ProductId: "power.fusion");
         Require(first.Submit(order).Accepted && second.Submit(order).Accepted, "build accepted through seam");

@@ -5,6 +5,11 @@ if (args is ["audit", ..])
     BehaviorAudit.Run(data);
     return;
 }
+if (args is ["acceptance", ..])
+{
+    AcceptanceContracts.Run(new IronDoctrine.Sim.MatchFactory(), data);
+    return;
+}
 SeamConformance.Run(new IronDoctrine.Sim.MatchFactory(), data);
 SubmissionTiming.Run(new IronDoctrine.Sim.MatchFactory(), Path.Combine(AppContext.BaseDirectory, "data/slice1.placeholders.json"));
 MechanicsProof.Run(Path.Combine(AppContext.BaseDirectory, "data/slice1.placeholders.json"));

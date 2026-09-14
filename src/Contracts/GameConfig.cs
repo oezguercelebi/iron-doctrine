@@ -135,12 +135,19 @@ public sealed record MapConfig
     public int HeightCells { get; init; }
     public int CellSize { get; init; }
     public StartConfig[] Starts { get; init; } = Array.Empty<StartConfig>();
-    // Default ter.ground; rectangles override cell type. ter.unbuildable is impassable on ground in this map.
+    // Default ter.ground; rectangles override cell type. Catalog TERRAIN.md: ter.unbuildable is ground-walkable and air-walkable, not buildable.
+    // Out-of-map cells are not walkable and are not a ter.unbuildable walk-block; TerrainAt returns ter.block for OOB.
     public TerrainRect[] Terrain { get; init; } = Array.Empty<TerrainRect>();
     public MapObjectConfig[] Objects { get; init; } = Array.Empty<MapObjectConfig>();
+    public bool InMap(int cellX, int cellZ) => cellX >= 0 && cellZ >= 0 && cellX < WidthCells && cellZ < HeightCells;
+    public bool InMap(WorldPoint point) => point.X >= 0 && point.Z >= 0 && point.X < WidthCells * CellSize && point.Z < HeightCells * CellSize;
+    // Catalog path tags. Unknown ids are not walkable/buildable. ter.slope is walkable; slice-1 has no steepness channel.
+    public bool GroundWalkable(string terrainId) => terrainId is "ter.ground" or "ter.road" or "ter.slope" or "ter.bridge" or "ter.shore" or "ter.unbuildable" or "ter.start";
+    public bool AirWalkable(string terrainId) => terrainId is "ter.ground" or "ter.road" or "ter.cliff" or "ter.slope" or "ter.water" or "ter.bridge" or "ter.shore" or "ter.unbuildable" or "ter.start";
+    public bool CanBuildOn(string terrainId) => terrainId is "ter.ground" or "ter.road" or "ter.start";
     public string TerrainAt(int x, int z)
     {
-        if (x < 0 || z < 0 || x >= WidthCells || z >= HeightCells) return "ter.unbuildable";
+        if (!InMap(x, z)) return "ter.block";
         var id = "ter.ground";
         foreach (var rect in Terrain) if (x >= rect.X && z >= rect.Z && x < rect.X + rect.Width && z < rect.Z + rect.Height) id = rect.TerrainId;
         return id;

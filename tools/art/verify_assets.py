@@ -31,7 +31,7 @@ def read_glb(path):
     assert doc["asset"]["version"]=="2.0"
     assert len(doc["buffers"])==1 and "uri" not in doc["buffers"][0]
     assert doc["buffers"][0]["byteLength"]<=len(chunks[1][1])
-    assert not doc.get("images") and not doc.get("cameras") and not doc.get("animations")
+    assert not doc.get("images") and not doc.get("cameras")
     return doc,chunks[1][1]
 
 
@@ -48,9 +48,47 @@ def accessor(doc,blob,index):
     return [struct.unpack_from("<"+fmt*count,blob,start+i*stride) for i in range(a["count"])]
 
 
+# Reject armatures / skeletal walk cycles. Zero glTF animations are allowed (current assets;
+# client-driven root bob and chinook rotor spin). Optional allowlist: gatherer rotor_left/rotor_right
+# rotation clips; infantry/vehicle root-channel translation/rotation without skins. Structures stay static.
+STATIC={"fusion","command","barracks","factory","dropoff","aa_turret","dock","garrison","rocks"}
+ROOT_BOB={"rifle","rocket","dozer","tank","scout"}
+
+
+def validate_animation_policy(name,doc):
+    assert not doc.get("skins"),(name,"armatures/skins are forbidden")
+    for node in doc.get("nodes",[]):
+        assert "skin" not in node,(name,node.get("name"),"skinned node")
+    for mesh in doc.get("meshes",[]):
+        for primitive in mesh["primitives"]:
+            attrs=primitive.get("attributes",{})
+            assert "JOINTS_0" not in attrs and "WEIGHTS_0" not in attrs,(name,"skeletal weights")
+    animations=doc.get("animations") or []
+    if not animations:
+        return
+    if name in STATIC:
+        raise AssertionError(f"{name}: structures/map props must not carry locomotion animations")
+    nodes=doc["nodes"]
+    for anim in animations:
+        label=(anim.get("name") or "").lower()
+        assert "walk" not in label and "run" not in label,(name,anim.get("name"),"skeletal walk/run cycles forbidden")
+        for channel in anim.get("channels",[]):
+            target=channel.get("target") or {}
+            node=nodes[target["node"]]
+            path=target.get("path")
+            if name=="gatherer":
+                assert node.get("name") in ("rotor_left","rotor_right"),(name,node.get("name"))
+                assert path=="rotation",(name,path)
+            else:
+                assert name in ROOT_BOB,(name,"unexpected animated asset")
+                assert node.get("name")==name,(name,node.get("name"),"root-channel only")
+                assert path in ("translation","rotation"),(name,path)
+
+
 def validate_file(name,record):
     path=MODELS/(name+".glb")
     doc,blob=read_glb(path)
+    validate_animation_policy(name,doc)
     assert record["catalog_id"]==EXPECTED[name]
     assert record["resource"]=="res://assets/models/"+name+".glb"
     assert (ROOT/"assets/sources"/(name+".blend")).exists()

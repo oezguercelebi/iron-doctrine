@@ -314,7 +314,9 @@ public partial class MatchClient : Node3D
         {
             var role = config.Role(target.RoleId);
             bool allied = Allied(target.OwnerSlot);
-            if (target.RoleId == "map.dock" && actors.All(e => config.Role(e.RoleId).AbilityIds.Contains("ab.gather"))) kind = OrderKind.Gather;
+            if (allied && role.IsBuilding && target.Hp >= target.MaxHp && actors.Any(e => !config.Role(e.RoleId).IsBuilding))
+                target = null;
+            else if (target.RoleId == "map.dock" && actors.All(e => config.Role(e.RoleId).AbilityIds.Contains("ab.gather"))) kind = OrderKind.Gather;
             else if (allied && role.IsBuilding && target.Hp < target.MaxHp && actors.All(e => config.Role(e.RoleId).AbilityIds.Contains("ab.repair"))) kind = OrderKind.Repair;
             else if ((target.OwnerSlot == _slot || target.RoleId == "map.garrison" && target.OwnerSlot < 0) && role.Capacity > 0 && actors.All(e => config.Role(e.RoleId).IsInfantry)) kind = OrderKind.Enter;
             else if (CanCapture(target, actors)) kind = OrderKind.Capture;

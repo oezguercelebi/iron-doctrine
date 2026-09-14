@@ -108,6 +108,7 @@ internal sealed partial class Match
         building.Hp = Math.Min(MaxHp(building), building.Hp + after - before);
         if (building.BuildLeft != 0) return;
         building.Complete = true; building.BuilderId = 0; builder.ConstructionId = 0;
+        building.Rally = FrontOf(building);
         Event("vo.building_done", building.Owner, building);
         if (building.RoleId == "eco.dropoff" && !building.FreeGathererGranted)
         {
@@ -197,7 +198,7 @@ internal sealed partial class Match
         RefundQueue(building);
         if (building.BuilderId != 0 && Bodies.TryGetValue(building.BuilderId, out var builder)) { builder.ConstructionId = 0; Abort(builder); }
         Abort(building);
-        building.BuilderId = 0; building.Owner = rifle.Owner; building.Rally = building.Pos;
+        building.BuilderId = 0; building.Owner = rifle.Owner; building.Rally = FrontOf(building);
         FinishAction(rifle);
     }
     private void Enter(Body infantry, MatchOrder action)

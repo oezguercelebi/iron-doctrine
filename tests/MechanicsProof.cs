@@ -66,6 +66,8 @@ public static class MechanicsProof
     private static void Production()
     {
         var m = New(); var barracks = m.Spawn("prod.barracks", 0, new(6000, 2000)); var fusion = m.Spawn("power.fusion", 0, new(5000, 2000)); m.Step();
+        Need(barracks.Rally != barracks.Pos && Distance2(barracks.Rally, barracks.Pos) >= (long)config.Role("prod.barracks").Radius * config.Role("prod.barracks").Radius, "Default rally sits in front of the producer, not on its footprint");
+        Need(fusion.Rally.Equals(fusion.Pos), "Non-producers do not get a rally flag offset");
         var rally = new WorldPoint(7000, 3000); Send(m, OrderKind.Rally, barracks, pos: rally);
         Send(m, OrderKind.Queue, barracks, product: "inf.rifle"); m.Step();
         Need(barracks.Queue.Count == 1 && barracks.Queue[0].Left < config.Role("inf.rifle").BuildTicks, "Production clock advances");

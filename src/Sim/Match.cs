@@ -66,8 +66,24 @@ internal sealed partial class Match : IMatch
         var r = roles[roleId];
         var body = new Body { Id = nextId++, RoleId = roleId, Owner = owner, Pos = position, Destination = position, Rally = position, Hp = r.Hp, Complete = complete, FreeGathererGranted = complete, BuildLeft = complete ? 0 : r.BuildTicks, BuildTotal = r.BuildTicks };
         Bodies.Add(body.Id, body);
+        if (complete) body.Rally = FrontOf(body);
         if (Obstacle(body)) topology++;
         return body;
+    }
+    internal bool Produces(string roleId) => roles.Values.Any(r => r.ProducerId == roleId);
+    internal WorldPoint FrontOf(Body building)
+    {
+        if (!Produces(building.RoleId)) return building.Pos;
+        int gap = Role(building).Radius + C.Rules.SpawnOffset;
+        foreach (var point in new[]
+        {
+            new WorldPoint(building.Pos.X, building.Pos.Z + gap),
+            new WorldPoint(building.Pos.X, building.Pos.Z - gap),
+            new WorldPoint(building.Pos.X + gap, building.Pos.Z),
+            new WorldPoint(building.Pos.X - gap, building.Pos.Z)
+        })
+            if (InBounds(point) && TerrainFits(point, C.Map.CellSize)) return point;
+        return building.Pos;
     }
     internal RoleConfig Role(Body body) => roles[body.RoleId];
     private bool Obstacle(Body body) => Role(body).IsBuilding || body.RoleId == "map.dock";

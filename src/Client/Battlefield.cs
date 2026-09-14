@@ -162,6 +162,7 @@ public partial class Battlefield : Node3D
         {
             var role = _config.Role(entity.RoleId);
             float radius = Math.Max(role.IsInfantry ? 13 : 18, role.Radius / Units * GetViewport().GetVisibleRect().Size.Y / Zoom);
+            if (role.IsBuilding) radius *= .42f;
             var center = ScreenPosition(entity, role.IsBuilding ? 1 : .5f);
             float distance = center.DistanceTo(screen);
             if (distance >= radius + 7) continue;

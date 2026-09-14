@@ -44,6 +44,7 @@ internal sealed partial class Match
             }
             if (dozer != null && missing != null && money >= config.Role(missing).Cost)
             {
+                BehaviorLog.Job(Slot, match.Tick, "base", missing);
                 var anchor = expansionAnchor ?? start;
                 if (missing == "eco.dropoff" && expansionAnchor == null)
                 {
@@ -58,7 +59,11 @@ internal sealed partial class Match
             foreach (var gatherer in own.Where(e => e.RoleId == "eco.chinook" && e.OccupantIds.Length == 0 && e.Activity == EntityActivity.Idle))
             {
                 var dock = docks.OrderBy(e => Distance2(gatherer.Position, e.Position)).ThenBy(e => e.Id).FirstOrDefault();
-                if (dock != null) Send(new MatchOrder(Slot, OrderKind.Gather, new[] { gatherer.Id }, TargetId: dock.Id));
+                if (dock != null)
+                {
+                    BehaviorLog.Job(Slot, match.Tick, "gather", "dock=" + dock.Id);
+                    Send(new MatchOrder(Slot, OrderKind.Gather, new[] { gatherer.Id }, TargetId: dock.Id));
+                }
                 else
                 {
                     var unexplored = config.Map.Objects.Where(o => o.RoleId == "map.dock" && Cell(view, config, o.Position) == Visibility.Shroud).OrderBy(o => Distance2(gatherer.Position, o.Position)).FirstOrDefault();
@@ -78,7 +83,7 @@ internal sealed partial class Match
                 var role = products[index];
                 if (money - reserve < role.Cost) continue;
                 if (Send(new MatchOrder(Slot, OrderKind.Queue, new[] { building.Id }, ProductId: role.Id)))
-                { money -= role.Cost; ProductionCursor[building.RoleId] = (index + 1) % products.Length; }
+                { money -= role.Cost; ProductionCursor[building.RoleId] = (index + 1) % products.Length; BehaviorLog.Job(Slot, match.Tick, "compose", role.Id); }
             }
             var army = own.Where(e => e.Completed && e.ContainerId == 0 && !config.Role(e.RoleId).IsBuilding && config.Role(e.RoleId).Damage > 0).ToArray();
             SentArmy.RemoveWhere(id => !army.Any(e => e.Id == id));
@@ -87,6 +92,7 @@ internal sealed partial class Match
             var threat = view.Entities.Where(e => EnemySlot(e.OwnerSlot) && !e.IsRemembered && assets.Any(a => Distance2(a.Position, e.Position) <= (long)config.Ai.DefendRadius * config.Ai.DefendRadius)).OrderBy(e => Distance2(start, e.Position)).FirstOrDefault();
             if (threat != null)
             {
+                BehaviorLog.Job(Slot, match.Tick, "defend", "threat=" + threat.Id);
                 foreach (var unit in army.Where(e => e.TargetId != threat.Id)) Send(new MatchOrder(Slot, OrderKind.AttackMove, new[] { unit.Id }, Position: threat.Position));
                 return;
             }
@@ -103,6 +109,7 @@ internal sealed partial class Match
                 destination = starts[EnemyStartIndex % starts.Length].Command;
                 if (Cell(view, config, destination) == Visibility.Visible) EnemyStartIndex++;
             }
+            BehaviorLog.Job(Slot, match.Tick, "attack", "group=" + idle.Length);
             foreach (var unit in idle)
                 if (Send(new MatchOrder(Slot, OrderKind.AttackMove, new[] { unit.Id }, Position: destination))) SentArmy.Add(unit.Id);
             LastAttack = match.Tick;

@@ -18,5 +18,6 @@ target/
 **/obj/
 
 .tools
+artifacts/
 
 __pycache__/

@@ -30,6 +30,7 @@ Ground-point orders (Build, Move, Attack-move, Waypoint, Rally and Exit) discard
 | Producer card | Queue its configured unit or research |
 | Queue number × | Cancel that queue position with the configured refund |
 | Minimap left / right click | Jump camera / issue contextual movement |
+| F3 | Diagnostics overlay: last box-select, units held in place, sim stuck/oscillate counts |
 | H / Escape | Field guide / cancel targeting, then local pause |
 
 The field guide pauses a running local match. Pause offers resume, guide, resign and desktop quit. The result screen offers rematch and quit. All labels for roles, costs, prerequisites, progress and capacities come from the frozen configuration/snapshot. Queue buttons retain the displayed producer's entity ID; snapshot ordering and a changed selection cannot redirect cancellation to a different producer. Enemy garrisons receive ordinary contextual Attack and cannot be selected as capture targets.
@@ -41,6 +42,8 @@ After the Godot argument separator, use `--proof-play` to drive ordinary **playe
 - `--proof-speed=4` optionally runs the shared fixed match clock four times faster; default is normal time. It does not change tick size or either side's order timings.
 - `--proof-output=/absolute/path.png` saves the actual finished viewport; default `user://proof-play.png`.
 - `--proof-quit` closes after the result has rendered and the image/marker have been emitted.
+
+`--diag` (or `IRON_DIAG=1`) enables sim behavior logging and the overlay. Console lines: `BOX_SELECT`, `tick=… stuck|oscillate|ai.*`, and `BEHAVIOR_REPORT` at match end. Headless analysis of a simulated 1vAI match: `bash tools/audit.sh` (writes `artifacts/behavior-audit.txt`). Default proofs stay silent.
 
 The start marker is `PROOF_PLAY_STARTED`. A finished game emits `PROOF_PLAY_FINISHED tick=… result=victory|defeat orders=… models=…`. The screenshot path and save result are printed separately as `PROOF_SCREENSHOT`. Headless mode emits the outcome but cannot produce a rendered screenshot.
 

@@ -97,6 +97,7 @@ internal sealed partial class Match : IMatch
         StepShots();
         UpdatePower(); UpdateFog(); CheckOutcome();
         if (phase == MatchPhase.Running) foreach (var brain in brains.Values) if (!Players[brain.Slot].Eliminated) brain.Think(this);
+        if (BehaviorLog.Enabled) BehaviorLog.Observe(this);
     }
     public void SetPaused(bool value) { if (S.LocalPauseAllowed && phase == MatchPhase.Running) paused = value; }
     private void CheckOutcome()

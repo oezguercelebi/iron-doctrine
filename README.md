@@ -67,6 +67,8 @@ Catalog sheets contain no balance numbers or frozen product names. All temporary
 
 ## Run locally
 
+Diagnostics: in-game **F3** overlay, or `bash tools/run.sh -- --diag`, or headless `bash tools/audit.sh` (writes `artifacts/behavior-audit.txt`).
+
 Requires Godot **4.7.2 .NET** and .NET SDK **8.0.425** (or a compatible .NET 8 feature band). A standard Godot build without .NET support will not work. No network service is required by the match.
 
 ```sh

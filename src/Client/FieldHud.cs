@@ -21,6 +21,7 @@ public partial class FieldHud : Control
     public bool PlacementAllowed { get; set; }
     public string Notice { get; set; } = "Select your Dozer to begin construction.";
     public string ProofText { get; set; } = "";
+    public string DiagText { get; set; } = "";
     public bool HelpOpen { get; set; }
     public bool DragSelecting { get; set; }
     public Vector2 DragStart { get; set; }
@@ -145,7 +146,12 @@ public partial class FieldHud : Control
         Text(new Vector2(32, 110), "OBJECTIVE  /  ELIMINATE ENEMY BUILDINGS", 11, _accent);
         string hint = !own.Any(e => e.RoleId == "power.fusion") ? "01  Select Dozer → build Fusion." : !own.Any(e => e.RoleId == "eco.dropoff") ? "02  Build a Drop-off near a supply dock." : !own.Any(e => e.RoleId == "prod.barracks") ? "03  Build Barracks. Train Rifle and Rocket." : !own.Any(e => e.RoleId == "prod.factory") ? "04  Add a Factory. Assemble your force." : "Advance east. Explore and clear enemy buildings.";
         Text(new Vector2(32, 134), hint, 13, _ink);
-        Text(new Vector2(32, 154), string.IsNullOrEmpty(ProofText) ? "LMB select · RMB order · H controls" : ProofText, 11, _muted);
+        Text(new Vector2(32, 154), string.IsNullOrEmpty(ProofText) ? "LMB select · RMB order · H controls · F3 diag" : ProofText, 11, _muted);
+        if (!string.IsNullOrEmpty(DiagText))
+        {
+            Panel(new Rect2(18, 172, Math.Min(640, Size.X - 36), 44), new Color(.055f, .092f, .105f, .95f));
+            Text(new Vector2(32, 198), DiagText, 12, _amber);
+        }
     }
 
     private void Minimap()
@@ -371,7 +377,7 @@ public partial class FieldHud : Control
         Text(rect.Position + new Vector2(30, 46), "FIELD GUIDE", 28, _ink);
         Text(rect.Position + new Vector2(30, 74), "Build a base, secure supplies, destroy every enemy building.", 15, _muted);
         string[] left = { "SELECT & NAVIGATE", "LMB / drag     Select / box-select your units", "Shift + LMB     Add or remove from selection", "Ctrl + 1–9     Assign a control group", "1–9 / double-tap     Recall / focus group", "WASD / arrows     Pan camera", "Middle drag / wheel     Pan / zoom", "Space     Focus selection", "Tab     Find and select a Dozer", "H / Esc     Help / cancel mode or pause" };
-        string[] right = { "ISSUE ORDERS", "RMB / Z     Contextual order / attack target", "Q / X / G     Attack-move / stop / guard", "T / F     Append waypoint / force attack", "R / E / C     Repair / enter / capture", "V / Y / Del     Exit / rally / sell", "Shift + order     Append to unit order queue", "Build card → LMB     Place a legal footprint", "Producer card     Train a unit or research", "Queue number ×     Cancel and refund that item" };
+        string[] right = { "ISSUE ORDERS", "RMB / Z     Contextual order / attack target", "Q / X / G     Attack-move / stop / guard", "T / F     Append waypoint / force attack", "R / E / C     Repair / enter / capture", "V / Y / Del     Exit / rally / sell", "Shift + order     Append to unit order queue", "Build card → LMB     Place a legal footprint", "Producer card     Train a unit or research", "Queue number ×     Cancel and refund that item", "F3     Diagnostics overlay (box, stuck, AI)" };
         for (int i = 0; i < left.Length; i++)
         {
             Text(rect.Position + new Vector2(30, 113 + i * 28), left[i], i == 0 ? 12 : 13, i == 0 ? _accent : _ink);

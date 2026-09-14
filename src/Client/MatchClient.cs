@@ -1,5 +1,6 @@
 using Godot;
 using IronDoctrine.Contracts;
+using IronDoctrine.Sim;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,10 @@ public partial class MatchClient : Node3D
     private float _proofSpeed = 1;
     private double _resultTime;
     private bool _proofSaved;
+    private bool _diag;
+    private bool _overlay;
+    private string _lastBox = "none";
+    private readonly Dictionary<int, (WorldPoint Pos, int Still)> _motion = new();
 
     /// <summary>The bootstrap supplies the match before this Node enters the tree.</summary>
     public void Initialize(IMatch match, Func<IMatch> rematch) { _match = match; _rematch = rematch; }
@@ -51,6 +56,14 @@ public partial class MatchClient : Node3D
         _hud = new FieldHud { Config = _match.Config, Field = _field, Selection = _selection, Command = HandleCommand, MapClick = HandleMapClick };
         layer.AddChild(_hud);
         string[] args = OS.GetCmdlineUserArgs();
+        _diag = args.Contains("--diag") || System.Environment.GetEnvironmentVariable("IRON_DIAG") == "1";
+        if (_diag)
+        {
+            BehaviorLog.Enabled = true;
+            BehaviorLog.Reset();
+            _overlay = true;
+            GD.Print("DIAG on — F3 toggles overlay; box/stuck/oscillate/AI jobs log to console");
+        }
         if (args.Contains("--proof-play"))
         {
             _proof = new ProofPilot(_match, _slot, ReceiveProofOrder);
@@ -63,6 +76,7 @@ public partial class MatchClient : Node3D
         var dozer = _snapshot.Entities.FirstOrDefault(e => e.OwnerSlot == _slot && e.RoleId == "build.dozer");
         if (dozer != null) _selection.Add(dozer.Id);
         _field.ShowSnapshot(_snapshot, _selection);
+        UpdateDiagOverlay();
         GD.Print($"CLIENT_READY slot={_slot} entities={_snapshot.Entities.Length} models={_field.LoadedModelCount}");
     }
 
@@ -150,7 +164,12 @@ public partial class MatchClient : Node3D
             if (evt.Id == "fx.promote") _field.MarkOrder(evt.Position, new Color("f2d78b"));
         }
         _field.ShowSnapshot(_snapshot, _selection);
-        if (_snapshot.Phase == MatchPhase.Finished) { ClearMode(); _hud.MenuOpen = false; _hud.HelpOpen = false; }
+        UpdateDiagOverlay();
+        if (_snapshot.Phase == MatchPhase.Finished)
+        {
+            ClearMode(); _hud.MenuOpen = false; _hud.HelpOpen = false;
+            if (BehaviorLog.Enabled) GD.Print(BehaviorLog.Report());
+        }
     }
 
     public override void _Input(InputEvent input)
@@ -216,6 +235,14 @@ public partial class MatchClient : Node3D
             return;
         }
         if (code == Key.H) { HandleCommand("help", "", 0); return; }
+        if (code == Key.F3)
+        {
+            _overlay = !_overlay;
+            if (_overlay && !BehaviorLog.Enabled) { BehaviorLog.Enabled = true; BehaviorLog.Reset(); }
+            UpdateDiagOverlay();
+            Notify(_overlay ? "Diagnostics overlay on." : "Diagnostics overlay off.");
+            return;
+        }
         if (_hud.HelpOpen || _hud.MenuOpen || _snapshot.Phase != MatchPhase.Running) return;
         if (code >= Key.Key1 && code <= Key.Key9)
         {
@@ -269,6 +296,11 @@ public partial class MatchClient : Node3D
         if (!append) _selection.Clear();
         foreach (var entity in candidates) _selection.Add(entity.Id);
         _audio.Notify("sfx.click");
+        string roles = string.Join(',', candidates.GroupBy(e => e.RoleId).Select(g => g.Count() + "x" + g.Key));
+        _lastBox = $"n={candidates.Length} {roles}";
+        if (_diag || _overlay) GD.Print($"BOX_SELECT tick={_snapshot.Tick} append={append} count={candidates.Length} roles={roles}");
+        BehaviorLog.Box(_snapshot.Tick, candidates.Length, roles, append);
+        UpdateDiagOverlay();
     }
 
     private void ContextOrder(EntitySnapshot? target, WorldPoint point, bool append)
@@ -434,6 +466,35 @@ public partial class MatchClient : Node3D
         if (order.Kind is OrderKind.AttackMove or OrderKind.Attack) _field.SetFocus(order.Position);
         if (order.Kind == OrderKind.Build) _field.SetFocus(order.Position);
         Notify("Play proof: " + order.Kind + (order.ProductId.Length > 0 ? " " + _match.Config.Role(order.ProductId).Label : ""));
+    }
+    private void UpdateDiagOverlay()
+    {
+        if (_hud == null) { return; }
+        if (!_overlay)
+        {
+            _hud.DiagText = "";
+            return;
+        }
+        int stuck = 0, moving = 0;
+        var live = new HashSet<int>();
+        foreach (var entity in _snapshot.Entities)
+        {
+            var role = _match.Config.Role(entity.RoleId);
+            if (role.IsBuilding || role.SpeedPerTick <= 0 || entity.ContainerId != 0) continue;
+            live.Add(entity.Id);
+            if (entity.Activity != EntityActivity.Moving && entity.Activity != EntityActivity.Attacking) { _motion.Remove(entity.Id); continue; }
+            moving++;
+            if (!_motion.TryGetValue(entity.Id, out var prior) || !prior.Pos.Equals(entity.Position))
+                _motion[entity.Id] = (entity.Position, 0);
+            else
+            {
+                int still = prior.Still + 1;
+                _motion[entity.Id] = (entity.Position, still);
+                if (still >= _match.Config.Rules.TickRate) stuck++;
+            }
+        }
+        foreach (int id in _motion.Keys.Where(id => !live.Contains(id)).ToArray()) _motion.Remove(id);
+        _hud.DiagText = $"DIAG  sel={_selection.Count} box={_lastBox}  moving={moving} held={stuck}  sim stuck={BehaviorLog.StuckEvents} osc={BehaviorLog.OscillateEvents}  F3";
     }
     private void Notify(string text) { _hud.Notice = text; _noticeLife = 5; }
     private void ClearMode() { _mode = null; _buildRole = ""; _hud.ModeText = ""; _hud.PlacementText = ""; _field.SetGhost("", default, false); }

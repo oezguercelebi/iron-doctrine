@@ -96,3 +96,15 @@ Fresh independent case-final R dispatched over accepted baseline63a008f..f0a0285
 ## 2026-09-12 final reviews block; patch cap reached
 Fresh sim-r2 R BLOCK P2 Systems.cs:228: nearby unload anchor falls through an unbounded FindFree search, allowing passengers outside local unload reach on default blocked terrain. Fresh case-final R BLOCK P2 CommandIntent.cs:12: Guard target id is stripped, so G+moving friendly unit guards a fixed point; the client proof currently asserts that wrong behavior. Both full verdicts are retained. Final case R inspected the02:15victory screenshot and passing final proof logs. The sim R was dispatched before final visible completion and accurately lacked that later artifact.
 Two sim patch rounds are exhausted. Crew rule: "budget.patch-rounds times, then stop for the user with both verdicts quoted." No third implementation round was started. Case is idle-user, not ready-to-close. Request one additional patch round to repair both remaining accepted-behavior findings, then rerun targeted/main/visible proof and fresh independent reviews. Same case, same outcome, no push. All worktrees are merged and removed.
+
+## 2026-09-14 user
+start fixing everything
+
+## 2026-09-14 lead
+User authorized the idle-user stop plus HUD/path/feel gaps from the 2026-09-14 audit. Spec amended (playable feel). Defaults taken: CanPlace includes units so the ghost matches arrival (catalog said units do not block ghost; player-visible truth wins). No new catalog ids. Frozen SeamConformance unchanged.
+
+Lanes (disjoint files, no new shared API):
+- feel-sim → src/Sim/**, tests/** except SeamConformance.cs
+- feel-hud → Battlefield.cs, FieldHud.cs, FieldAudio.cs
+- feel-input → MatchClient.cs, CommandIntent.cs, src/Client/Proof/**, Client README
+Spawn all three worktrees after this commit. Proof: bash tools/proof.sh ; bash src/Client/Proof/run.sh. R after each merge.

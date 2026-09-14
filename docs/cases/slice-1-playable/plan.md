@@ -14,4 +14,8 @@
 
 - [ ] sim-r2 · idle-user · lane src/Sim/**, tests/** · after sim-r1 · Sanitize point orders, queue unload correctly, clear control on capture.
 
-- [ ] final-findings · idle-user · lanes src/Sim/**, tests/** and src/Client/** · after user authorizes patch-budget extension · Keep unload passengers within actual local reach on default terrain; restore unit-targeted Guard through UI and simulation without exposing hidden targets. Preserve frozen contract/test. Add regressions for blocked unload destinations and moving-Dozer Guard, repeat visible proof and independent reviews.
+- [ ] final-findings · cancelled · superseded by feel-sim / feel-hud / feel-input
+- [ ] feel-sim · open · lane src/Sim/**, tests/** · after — · Clamp unload FindFree to local reach; CanPlace matches GroundFits(units); regressions. Do not touch tests/SeamConformance.cs.
+- [ ] feel-hud · open · lane src/Client/Battlefield.cs, src/Client/FieldHud.cs, src/Client/FieldAudio.cs · after — · Persistent rally flag on re-select; Rally only on producers; pick infantry over buildings; command bar uses owned selection; sfx.rally/sfx.place tones.
+- [ ] feel-input · open · lane src/Client/MatchClient.cs, src/Client/CommandIntent.cs, src/Client/Proof/**, src/Client/README.md · after — · Guard keeps unit TargetId; sell mode; edge pan; box-select radius; play sfx.rally/sfx.place; upgrade toast. Do not add new Battlefield APIs.
+- [ ] feel-integration · open · lane hubs on main · after feel-sim, feel-hud, feel-input · Proofs on main, Godot build, independent R.

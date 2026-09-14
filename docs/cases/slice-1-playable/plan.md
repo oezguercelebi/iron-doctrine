@@ -18,4 +18,4 @@
 - [x] feel-sim · done · lane src/Sim/**, tests/** · after — · Clamp unload FindFree to local reach; CanPlace matches GroundFits(units); regressions. R approve.
 - [x] feel-hud · done · lane src/Client/Battlefield.cs, src/Client/FieldHud.cs, src/Client/FieldAudio.cs · after — · Persistent rally flag on re-select; Rally only on producers; pick infantry over buildings; command bar uses owned selection; sfx.rally/sfx.place tones. R approve.
 - [x] feel-input · done · lane src/Client/MatchClient.cs, src/Client/CommandIntent.cs, src/Client/Proof/**, src/Client/README.md · after — · Guard keeps unit TargetId; sell mode; edge pan; box-select radius; play sfx.rally/sfx.place; upgrade toast. R approve after sell-incomplete patch b7a5417.
-- [ ] feel-integration · open · lane hubs on main · after feel-sim, feel-hud, feel-input · Proofs on main, Godot build, independent R.
+- [x] feel-integration · done · lane hubs on main · after feel-sim, feel-hud, feel-input · Proofs on main, Godot build, case R approve.

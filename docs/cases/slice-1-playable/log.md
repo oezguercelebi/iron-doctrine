@@ -138,3 +138,6 @@ approve. Completed gate gone; sell still cursor then click.
 
 ## 2026-09-14 lead
 All three feel lanes R-approved. Sim proof and client proof green on main. User can play: select producer, Y/RMB set rally, deselect, reselect — flag at RallyPoint.
+
+## 2026-09-14 r · case feel-wave
+approve. No interaction findings ≥80. Combined range f923e3f..b7a5417 meets the 2026-09-14 amend.

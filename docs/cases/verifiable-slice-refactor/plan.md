@@ -18,4 +18,4 @@ Recommended wave 1 (≤3): `i-verify`, `i-sim`, `i-client`. Wave 2: `i-assets`. 
 ## Lead / integrate
 
 - [x] `lead-hubs` done · AGENTS.md verify table; `tools/verify.sh` client-gui wired
-- [ ] `integrate-proof` open · lane — · after i-verify, i-sim, i-client, i-assets, lead-hubs · Integrated `bash tools/verify.sh` exit 0 on `b649bd0` (render group still pending in harness; macOS frames captured separately). Negative controls recorded. Final case R next. User closes. No push.
+- [x] `integrate-proof` done · `bash tools/verify.sh` exit 0 on `b649bd0`; frames on `12e26d5`; final R APPROVE. User closes. No push.

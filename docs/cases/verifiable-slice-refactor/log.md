@@ -87,3 +87,9 @@ Negative controls (not merged): unbuildable-as-wall fails traverse; empty Combat
 macOS frames on `12e26d5`: `proof/frames/{build-ghost,pause,hud-chrome}.png` display=macOS gl_compatibility. Locomotion bob/rotors not in stills.
 
 Spawning final integration R on `c5aefdd..12e26d5`. No push. User closes.
+
+## 2026-09-15T00:35Z r · case-final
+APPROVE. 12e26d5. Engineering gates hold for ready-to-close. User visual/play + close. See `reviews/case-final.md`.
+
+## 2026-09-15T00:36Z lead
+Wrote `surprise.md`. Status `ready-to-close`. User closes. No push.

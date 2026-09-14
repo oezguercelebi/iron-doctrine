@@ -2,9 +2,9 @@
 
 `MatchClient.Initialize(IMatch, Func<IMatch>)` must run before adding the node to the scene tree. The root scene attaches the lead-owned `src/Bootstrap/Main.cs`. This lane imports only `IronDoctrine.Contracts` and Godot.
 
-The client takes one detached snapshot after **every** fixed simulation step and consumes its current-tick events before advancing again. Selection, camera, control groups, interpolation, UI and sound remain presentation state. The battlefield loads each role's configured glTF resource directly, replaces its `team_color` material per owner, and respects snapshot visibility. Radar does not reveal terrain or hidden units.
+The client takes one detached snapshot after **every** fixed simulation step and consumes its current-tick events before advancing again. Selection, camera, control groups, interpolation, UI and sound remain presentation state. The battlefield loads each role's configured glTF resource directly, replaces its `team_color` material per owner, and respects snapshot visibility. Radar does not reveal terrain or hidden units. Instant tracers come only from `snapshot.CombatTraces` (`del.instant` Launch); missiles stay `snapshot.Projectiles`. Empty traces mean no instant FX (no Activity+cooldown inference). Infantry and ground vehicles add a small root bob while Moving/Returning; structures stay static; `eco.chinook` spins `rotor_left` / `rotor_right` about local Y while not Contained.
 
-Enemy facing follows successive visible positions. Enemy combat feedback uses visible health changes; it never reads redacted enemy activity, destinations or targets or invents shot endpoints. Private order targets are used only for the viewer's own instant-fire tracers. A disabled radar suppresses live minimap entity blips, including selected units. For non-owned selections, activity and passengers/cargo are shown as unknown; private XP and progress are omitted instead of displaying redacted defaults as facts.
+Enemy facing follows successive visible positions. Enemy combat feedback uses visible health changes; it never reads redacted enemy activity, destinations or targets or invents shot endpoints. Instant tracers use fog-filtered CombatTraces, not private enemy order targets. A disabled radar suppresses live minimap entity blips, including selected units. Radar is not LOS. For non-owned or remembered selections, activity and passengers/cargo are shown as unknown; private XP and progress are omitted instead of displaying redacted defaults as facts.
 
 Ground-point orders (Build, Move, Attack-move, Waypoint, Rally and Exit) discard the hovered entity ID before submission, preserving the requested ground coordinate. Guard keeps a picked unit TargetId so it follows that unit; with no pick it stays a ground point. Attack, Force-attack, Repair, Gather, Enter and Capture retain deliberate entity targets. A selected own producer shows its rally flag again on re-select (HUD draws it). New producers start with that flag a short step in front of the building. Place with **click-hold-drag** to set facing; release commits. A new Build leaves the unfinished site; Stop or the dozer dying cancels it. RMB an unfinished site with a dozer to resume. Clicks on the open ground in front of a building move or select there; they do not grab the building unless you click its core.
 
@@ -30,7 +30,8 @@ Ground-point orders (Build, Move, Attack-move, Waypoint, Rally and Exit) discard
 | Producer card | Queue its configured unit or research |
 | Queue number × | Cancel that queue position with the configured refund |
 | Minimap left / right click | Jump camera / issue contextual movement |
-| F3 | Diagnostics overlay: last box-select, units held in place, sim stuck/oscillate counts |
+| F3 | Diagnostics overlay: tick, selection ids, last box-select, units held in place |
+| F9 / F10 / F12 | With `--diag` or `--verify-scenario`: rematch from factory, single-step while paused, capture viewport |
 | H / Escape | Field guide / cancel targeting, then local pause |
 
 The field guide pauses a running local match. Pause offers resume, guide, resign and desktop quit. The result screen offers rematch and quit. All labels for roles, costs, prerequisites, progress and capacities come from the frozen configuration/snapshot. Queue buttons retain the displayed producer's entity ID; snapshot ordering and a changed selection cannot redirect cancellation to a different producer. Enemy garrisons receive ordinary contextual Attack and cannot be selected as capture targets.
@@ -43,7 +44,23 @@ After the Godot argument separator, use `--proof-play` to drive ordinary **playe
 - `--proof-output=/absolute/path.png` saves the actual finished viewport; default `user://proof-play.png`.
 - `--proof-quit` closes after the result has rendered and the image/marker have been emitted.
 
-`--diag` (or `IRON_DIAG=1`) enables sim behavior logging and the overlay. Console lines: `BOX_SELECT`, `tick=… stuck|oscillate|ai.*`, and `BEHAVIOR_REPORT` at match end. Headless analysis of a simulated 1vAI match: `bash tools/audit.sh` (writes `artifacts/behavior-audit.txt`). Default proofs stay silent.
+`--diag` (or `IRON_DIAG=1`) enables the client diagnostics overlay. Console lines: `BOX_SELECT`. The client does not import `Sim.BehaviorLog`. Headless analysis of a simulated 1vAI match remains `bash tools/audit.sh` (writes `artifacts/behavior-audit.txt`). Default proofs stay silent.
+
+### Named input-path verify
+
+After the Godot argument separator, `--verify-scenario=<id>` injects real `InputEvent`s through production `_Input` via `Viewport.PushInput` (1440×900). ProofPilot is not this evidence path.
+
+| id | claim |
+| --- | --- |
+| `client.no_fog_world_leak` | HUD chrome right-click does not submit a world Move; fog HUD redacts private fields |
+| `client.input_build_ghost_point` | Tab-select dozer, Fusion card, place at a CanPlace ghost point |
+| `match.pause_freezes_clock` | Escape freezes the match tick |
+
+`--verify-quit` closes after PASS/FAIL. `--verify-frame=path` captures the viewport when a display exists; headless prints `VERIFY_FRAME_PENDING` and does not invent a PNG. Headless proves dispatch + `OrderReceipt` + snapshot change only.
+
+```sh
+bash src/Client/Proof/verify-godot.sh
+```
 
 The start marker is `PROOF_PLAY_STARTED`. A finished game emits `PROOF_PLAY_FINISHED tick=… result=victory|defeat orders=… models=…`. The screenshot path and save result are printed separately as `PROOF_SCREENSHOT`. Headless mode emits the outcome but cannot produce a rendered screenshot.
 
@@ -53,4 +70,4 @@ The start marker is `PROOF_PLAY_STARTED`. A finished game emits `PROOF_PLAY_FINI
 
 Run `bash src/Client/Proof/run.sh` from the repository root. Set `IRON_DOTNET` to a .NET 8 executable if it is not installed on the path or under the repository's `.tools`. The runner creates and removes a disposable .NET project; it does not change the game project or tuning. `ClientInputProof.cs` is excluded from the game by a compilation symbol.
 
-The proof links the production command/intel helpers and the actual simulation. It submits Build with a nearby picked unit, then verifies the created building matches the approved ghost point. It covers the analogous ground modes (Move still discards a pick), Guard retaining a picked unit and staying ground when none is picked, preserved entity targets, enemy redacted activity/passengers/cargo/XP, and retained own-unit details. This is an order/data regression check; manual mouse/HUD interactions remain a separate proof.
+The proof links the production command/intel helpers and the actual simulation. It submits Build with a nearby picked unit, then verifies the created building matches the approved ghost point. It covers the analogous ground modes (Move still discards a pick), Guard retaining a picked unit and staying ground when none is picked, preserved entity targets, enemy redacted activity/passengers/cargo/XP, and retained own-unit details. This is an order/data regression check labelled `HELPER_NOT_GUI`; it is not Godot mouse/HUD/render evidence. Use `--verify-scenario` for the real input path.

@@ -1,6 +1,5 @@
 using Godot;
 using IronDoctrine.Contracts;
-using IronDoctrine.Sim;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,8 +38,11 @@ public partial class MatchClient : Node3D
     private int _placeFacing;
     private bool _diag;
     private bool _overlay;
+    private bool _verify;
+    private string _verifyFrame = "";
     private string _lastBox = "none";
     private readonly Dictionary<int, (WorldPoint Pos, int Still)> _motion = new();
+    private readonly List<(MatchOrder Order, OrderReceipt Receipt)> _submits = new();
 
     /// <summary>The bootstrap supplies the match before this Node enters the tree.</summary>
     public void Initialize(IMatch match, Func<IMatch> rematch) { _match = match; _rematch = rematch; }
@@ -59,15 +61,26 @@ public partial class MatchClient : Node3D
         _hud = new FieldHud { Config = _match.Config, Field = _field, Selection = _selection, Command = HandleCommand, MapClick = HandleMapClick };
         layer.AddChild(_hud);
         string[] args = OS.GetCmdlineUserArgs();
-        _diag = args.Contains("--diag") || System.Environment.GetEnvironmentVariable("IRON_DIAG") == "1";
+        _diag = args.Contains("--diag") || string.Equals(System.Environment.GetEnvironmentVariable("IRON_DIAG"), "1", StringComparison.Ordinal);
         if (_diag)
         {
-            BehaviorLog.Enabled = true;
-            BehaviorLog.Reset();
             _overlay = true;
-            GD.Print("DIAG on — F3 toggles overlay; box/stuck/oscillate/AI jobs log to console");
+            GD.Print("DIAG on — F3 toggles overlay; box/held log to console (no Sim.BehaviorLog import)");
         }
-        if (args.Contains("--proof-play"))
+        string? verify = args.FirstOrDefault(a => a.StartsWith("--verify-scenario=", StringComparison.Ordinal));
+        if (verify != null)
+        {
+            _verify = true;
+            _overlay = true;
+            string id = verify["--verify-scenario=".Length..];
+            string? frameArg = args.FirstOrDefault(a => a.StartsWith("--verify-frame=", StringComparison.Ordinal));
+            _verifyFrame = frameArg == null ? "" : frameArg["--verify-frame=".Length..];
+            _hud.ProofText = "VERIFY  ·  " + id;
+            var verifyNode = new DevControl();
+            verifyNode.Initialize(this, id, args.Contains("--verify-quit"), _verifyFrame);
+            AddChild(verifyNode);
+        }
+        else if (args.Contains("--proof-play"))
         {
             _proof = new ProofPilot(_match, _slot, ReceiveProofOrder);
             string? speed = args.FirstOrDefault(a => a.StartsWith("--proof-speed=", StringComparison.Ordinal));
@@ -172,7 +185,6 @@ public partial class MatchClient : Node3D
         if (_snapshot.Phase == MatchPhase.Finished)
         {
             ClearMode(); _hud.MenuOpen = false; _hud.HelpOpen = false;
-            if (BehaviorLog.Enabled) GD.Print(BehaviorLog.Report());
         }
     }
 
@@ -255,9 +267,28 @@ public partial class MatchClient : Node3D
         if (code == Key.F3)
         {
             _overlay = !_overlay;
-            if (_overlay && !BehaviorLog.Enabled) { BehaviorLog.Enabled = true; BehaviorLog.Reset(); }
             UpdateDiagOverlay();
             Notify(_overlay ? "Diagnostics overlay on." : "Diagnostics overlay off.");
+            return;
+        }
+        if ((_diag || _verify) && code == Key.F9)
+        {
+            Restart();
+            return;
+        }
+        if ((_diag || _verify) && code == Key.F10 && _snapshot.Phase == MatchPhase.Running)
+        {
+            bool paused = _snapshot.Paused;
+            if (paused) _match.SetPaused(false);
+            _match.Step();
+            if (paused) _match.SetPaused(true);
+            RefreshSnapshot();
+            Notify($"Stepped to tick {_snapshot.Tick}.");
+            return;
+        }
+        if ((_diag || _verify) && code == Key.F12)
+        {
+            CaptureFrame(_verifyFrame.Length > 0 ? _verifyFrame : "user://verify-frame.png");
             return;
         }
         if (_hud.HelpOpen || _hud.MenuOpen || _snapshot.Phase != MatchPhase.Running) return;
@@ -316,7 +347,6 @@ public partial class MatchClient : Node3D
         string roles = string.Join(',', candidates.GroupBy(e => e.RoleId).Select(g => g.Count() + "x" + g.Key));
         _lastBox = $"n={candidates.Length} {roles}";
         if (_diag || _overlay) GD.Print($"BOX_SELECT tick={_snapshot.Tick} append={append} count={candidates.Length} roles={roles}");
-        BehaviorLog.Box(_snapshot.Tick, candidates.Length, roles, append);
         UpdateDiagOverlay();
     }
 
@@ -468,7 +498,10 @@ public partial class MatchClient : Node3D
 
     private bool Submit(OrderKind kind, int[] actors, int target = 0, WorldPoint position = default, string product = "", bool append = false, int queueIndex = 0, int facing = 0)
     {
-        var receipt = _match.Submit(CommandIntent.Create(_slot, kind, actors, target, position, product, append, queueIndex, facing));
+        var order = CommandIntent.Create(_slot, kind, actors, target, position, product, append, queueIndex, facing);
+        var receipt = _match.Submit(order);
+        _submits.Add((order, receipt));
+        if (_submits.Count > 64) _submits.RemoveRange(0, _submits.Count - 64);
         if (!receipt.Accepted) { Notify(receipt.Reason); _audio.Notify("sfx.invalid"); return false; }
         if (kind == OrderKind.Rally) _audio.Notify("sfx.rally");
         if (kind == OrderKind.Build) _audio.Notify("sfx.place");
@@ -513,7 +546,8 @@ public partial class MatchClient : Node3D
             }
         }
         foreach (int id in _motion.Keys.Where(id => !live.Contains(id)).ToArray()) _motion.Remove(id);
-        _hud.DiagText = $"DIAG  sel={_selection.Count} box={_lastBox}  moving={moving} held={stuck}  sim stuck={BehaviorLog.StuckEvents} osc={BehaviorLog.OscillateEvents}  F3";
+        string ids = string.Join(',', _selection.OrderBy(id => id));
+        _hud.DiagText = $"DIAG tick={_snapshot.Tick} sel={ids} box={_lastBox} moving={moving} held={stuck} paused={_snapshot.Paused} F3";
     }
     private void Notify(string text) { _hud.Notice = text; _noticeLife = 5; }
     private void ClearMode() { _mode = null; _buildRole = ""; _placeHeld = false; _placeFacing = 0; _hud.ModeText = ""; _hud.PlacementText = ""; _field.SetGhost("", default, false); }
@@ -550,13 +584,40 @@ public partial class MatchClient : Node3D
         _proofSaved = true;
         string? argument = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--proof-output=", StringComparison.Ordinal));
         string path = argument == null ? "user://proof-play.png" : argument["--proof-output=".Length..];
-        if (DisplayServer.GetName() != "headless")
-        {
-            var image = GetViewport().GetTexture().GetImage();
-            var error = image.SavePng(path);
-            GD.Print($"PROOF_SCREENSHOT {ProjectSettings.GlobalizePath(path)} result={error}");
-        }
+        CaptureFrame(path, "PROOF_SCREENSHOT");
         GD.Print($"PROOF_PLAY_FINISHED tick={_snapshot.Tick} result={(_snapshot.WinningSlots.Contains(_slot) ? "victory" : "defeat")} orders={_proof!.OrdersIssued} models={_field.LoadedModelCount}");
         if (OS.GetCmdlineUserArgs().Contains("--proof-quit")) GetTree().Quit();
+    }
+
+    internal IMatch Match => _match;
+    internal MatchSnapshot Snapshot => _snapshot;
+    internal FieldHud Hud => _hud;
+    internal Battlefield Field => _field;
+    internal int Slot => _slot;
+    internal IReadOnlyCollection<int> Selected => _selection;
+    internal IReadOnlyList<(MatchOrder Order, OrderReceipt Receipt)> Submits => _submits;
+    internal string BuildRole => _buildRole;
+    internal OrderKind? Mode => _mode;
+
+    internal void AdvanceTicks(int ticks)
+    {
+        for (int i = 0; i < ticks; i++)
+        {
+            if (_snapshot.Paused || _snapshot.Phase != MatchPhase.Running) break;
+            _match.Step();
+            RefreshSnapshot();
+        }
+    }
+
+    internal void CaptureFrame(string path, string marker = "VERIFY_FRAME")
+    {
+        if (DisplayServer.GetName() == "headless")
+        {
+            GD.Print($"{marker}_PENDING headless path={path}");
+            return;
+        }
+        var image = GetViewport().GetTexture().GetImage();
+        var error = image.SavePng(path);
+        GD.Print($"{marker} {ProjectSettings.GlobalizePath(path)} result={error}");
     }
 }

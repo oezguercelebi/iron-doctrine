@@ -43,8 +43,11 @@ public partial class Battlefield : Node3D
         public Vector3 ObservedHeading;
         public int Team = int.MinValue;
         public bool Remembered;
-        public long LastShot;
+        public float BobPhase;
+        public Node3D[] Rotors = Array.Empty<Node3D>();
     }
+    private long _traceTick = -1;
+    private readonly HashSet<int> _drawnTraces = new();
 
     public void Initialize(GameConfig config, MatchSetup setup, int slot)
     {
@@ -226,6 +229,7 @@ public partial class Battlefield : Node3D
                 view.Root.Position = ToWorld(entity.Position) + Vector3.Up * (role.IsFlying ? 3.1f : 0);
                 view.Root.AddChild(view.Model);
                 view.Root.AddChild(view.Ring);
+                if (entity.RoleId == "eco.chinook") view.Rotors = FindNamed(view.Model, "rotor_left", "rotor_right");
                 AddChild(view.Root);
                 _bodies.Add(entity.Id, view);
             }
@@ -249,18 +253,8 @@ public partial class Battlefield : Node3D
             view.Ring.Visible = selection.Contains(entity.Id);
             view.Ring.Position = new Vector3(0, role.IsFlying ? -3.04f : .05f, 0);
             view.Model.Scale = entity.Completed ? Vector3.One : new Vector3(1, Mathf.Lerp(.12f, 1, 1 - (float)entity.BuildTicksLeft / Math.Max(1, entity.BuildTicksTotal)), 1);
-            // Only our own snapshot contains a current order target. Enemy combat is shown by public impacts above.
-            if (entity.OwnerSlot == snapshot.ViewerSlot && entity.Activity == EntityActivity.Attacking && snapshot.Tick - view.LastShot >= Math.Max(1, role.AttackCooldownTicks))
-            {
-                var target = snapshot.Entities.FirstOrDefault(e => e.Id == entity.TargetId && !e.IsRemembered);
-                if (target != null && role.DeliveryId == "del.instant")
-                {
-                    var end = ToWorld(target.Position) + Vector3.Up * (_config.Role(target.RoleId).IsFlying ? 3.1f : .8f);
-                    Tracer(view.Desired + Vector3.Up, end, role.DamageId == "dmg.cannon" ? new Color("ffeeb5") : new Color("ddbf73"));
-                    view.LastShot = snapshot.Tick;
-                }
-            }
         }
+        DrawInstantTraces(snapshot);
         foreach (int id in _bodies.Keys.Where(id => !present.Contains(id)).ToArray())
         {
             var view = _bodies[id];
@@ -285,6 +279,48 @@ public partial class Battlefield : Node3D
             missile.Position = newPosition;
         }
         UpdateRallyFlags(snapshot, selection);
+    }
+
+    private void DrawInstantTraces(MatchSnapshot snapshot)
+    {
+        if (snapshot.Tick != _traceTick)
+        {
+            _drawnTraces.Clear();
+            _traceTick = snapshot.Tick;
+        }
+        foreach (var trace in snapshot.CombatTraces)
+        {
+            if (trace.DeliveryId != "del.instant" || trace.Phase != CombatTracePhase.Launch) continue;
+            if (!_drawnTraces.Add(trace.Id)) continue;
+            float fromH = TraceHeight(trace.SourceId);
+            float toH = TraceHeight(trace.TargetId);
+            var color = trace.DamageId == "dmg.cannon" ? new Color("ffeeb5") : new Color("ddbf73");
+            Tracer(ToWorld(trace.Position) + Vector3.Up * fromH, ToWorld(trace.TargetPosition) + Vector3.Up * toH, color);
+        }
+    }
+
+    private float TraceHeight(int entityId)
+    {
+        var entity = entityId != 0 ? _snapshot.Entities.FirstOrDefault(e => e.Id == entityId) : null;
+        return entity != null && _config.Role(entity.RoleId).IsFlying ? 3.1f : 1f;
+    }
+
+    private static Node3D[] FindNamed(Node root, params string[] names)
+    {
+        var found = new List<Node3D>();
+        CollectNamed(root, names, found);
+        return found.ToArray();
+    }
+
+    private static void CollectNamed(Node node, string[] names, List<Node3D> found)
+    {
+        if (node is Node3D n3)
+        {
+            string name = node.Name.ToString();
+            foreach (string want in names)
+                if (name.Equals(want, StringComparison.OrdinalIgnoreCase)) { found.Add(n3); break; }
+        }
+        foreach (Node child in node.GetChildren()) CollectNamed(child, names, found);
     }
 
     private void UpdateRallyFlags(MatchSnapshot snapshot, HashSet<int> selection)
@@ -400,8 +436,17 @@ public partial class Battlefield : Node3D
     {
         foreach (var view in _bodies.Values)
         {
-            view.Root.Position = view.Root.Position.Lerp(view.Desired, Math.Min(1, (float)delta * 22));
             var role = _config.Role(view.State.RoleId);
+            var desired = view.Desired;
+            bool groundMover = !role.IsBuilding && !role.IsFlying && !role.IsNeutral && role.SpeedPerTick > 0;
+            bool walking = groundMover && view.State.Activity is EntityActivity.Moving or EntityActivity.Returning;
+            if (walking)
+            {
+                view.BobPhase += (float)delta * 11f;
+                desired.Y += 0.07f * Mathf.Sin(view.BobPhase * 2f);
+            }
+            else if (groundMover) view.BobPhase = Mathf.MoveToward(view.BobPhase, 0, (float)delta * 18f);
+            view.Root.Position = view.Root.Position.Lerp(desired, Math.Min(1, (float)delta * 22));
             if (!role.IsBuilding)
             {
                 Vector3 direction = view.ObservedHeading;
@@ -418,6 +463,11 @@ public partial class Battlefield : Node3D
                     float angle = Mathf.Atan2(-direction.X, -direction.Z);
                     view.Model.Rotation = new Vector3(0, Mathf.LerpAngle(view.Model.Rotation.Y, angle, Math.Min(1, (float)delta * 9)), 0);
                 }
+            }
+            if (view.Rotors.Length > 0 && view.State.Activity != EntityActivity.Contained && !view.State.IsRemembered)
+            {
+                float spin = (float)delta * Mathf.Tau * 5f;
+                foreach (var rotor in view.Rotors) rotor.RotateY(spin);
             }
         }
         for (int i = _effects.Count - 1; i >= 0; i--)

@@ -27,6 +27,10 @@ public partial class FieldHud : Control
     public Vector2 DragStart { get; set; }
     public Vector2 DragEnd { get; set; }
     public bool MenuOpen { get; set; }
+    public const int GuiWidth = 1440;
+    public const int GuiHeight = 900;
+    public const int HeaderHeight = 72;
+    public const int CommandHeight = 224;
     private readonly List<ButtonRegion> _buttons = new();
     private Font _font = null!;
     private Font _bold = null!;
@@ -35,7 +39,7 @@ public partial class FieldHud : Control
     private Rect2 _mapRect;
     private string _tooltip = "";
     private readonly Color _panel = new("111d23"), _line = new("304149"), _ink = new("e5eee9"), _muted = new("92a8aa"), _accent = new("84d6c1"), _amber = new("edbb77");
-    private float Bottom => Size.Y - 224;
+    private float Bottom => Size.Y - CommandHeight;
     private sealed record ButtonRegion(Rect2 Rect, string Action, string Product, int Index, int ActorId, bool Enabled, string Tooltip);
 
     public override void _Ready()
@@ -46,7 +50,22 @@ public partial class FieldHud : Control
         _bold = ThemeDB.FallbackFont;
     }
 
-    public bool BlocksWorld(Vector2 point) => HelpOpen || MenuOpen || Snapshot.Phase == MatchPhase.Finished || point.Y < 72 || point.Y >= Bottom || (point.Y < 172 && point.X < 355);
+    public bool BlocksWorld(Vector2 point) => HelpOpen || MenuOpen || Snapshot.Phase == MatchPhase.Finished || point.Y < HeaderHeight || point.Y >= Bottom || (point.Y < 172 && point.X < 355);
+
+    public bool TryButton(string action, string product, out Rect2 rect)
+    {
+        for (int i = _buttons.Count - 1; i >= 0; i--)
+        {
+            var region = _buttons[i];
+            if (region.Action == action && (product.Length == 0 || region.Product == product))
+            {
+                rect = region.Rect;
+                return true;
+            }
+        }
+        rect = default;
+        return false;
+    }
 
     public bool Click(Vector2 point, bool right)
     {
@@ -181,8 +200,12 @@ public partial class FieldHud : Control
         foreach (var entity in Snapshot.Entities.Where(e => e.ContainerId == 0))
         {
             var role = Config.Role(entity.RoleId);
-            if (Field.VisibilityAt(entity.Position) == Visibility.Shroud || !Snapshot.Player.Radar) continue;
+            // Radar ≠ LOS: no blips without radar, including selected units; shroud never blips.
+            // Radar on does not reveal shrouded or fog-hidden mobiles — only LOS / own / last-seen buildings.
+            var vis = Field.VisibilityAt(entity.Position);
+            if (!Snapshot.Player.Radar || vis == Visibility.Shroud) continue;
             if (entity.IsRemembered && !role.IsBuilding) continue;
+            if (vis != Visibility.Visible && entity.OwnerSlot != Snapshot.ViewerSlot && !(entity.IsRemembered && role.IsBuilding)) continue;
             var position = MapPosition(entity.Position);
             var color = Field.TeamColor(entity.OwnerSlot);
             if (entity.IsRemembered) color = color.Darkened(.6f);
@@ -214,8 +237,8 @@ public partial class FieldHud : Control
         var first = chosen[0];
         var role = Config.Role(first.RoleId);
         Text(new Vector2(x, y + 55), chosen.Length == 1 ? role.Label : $"{chosen.Length} units selected", 23, _ink);
-        bool own = first.OwnerSlot == Snapshot.ViewerSlot;
-        string affiliation = own ? "YOUR FORCE" : first.OwnerSlot < 0 ? "NEUTRAL" : "CONTACT";
+        bool own = SelectionIntel.OwnLive(first, Snapshot.ViewerSlot);
+        string affiliation = own ? "YOUR FORCE" : first.IsRemembered ? "LAST SEEN" : first.OwnerSlot < 0 ? "NEUTRAL" : "CONTACT";
         Text(new Vector2(x, y + 76), affiliation + "  /  " + SelectionIntel.Status(first, Snapshot.ViewerSlot), 10, own ? _accent : _amber);
         int hp = chosen.Sum(e => e.Hp), max = chosen.Sum(e => e.MaxHp);
         Bar(new Rect2(x, y + 89, 261, 7), max == 0 ? 0 : (float)hp / max, _accent);
@@ -225,7 +248,7 @@ public partial class FieldHud : Control
         else if (role.Capacity > 0) Text(new Vector2(x, y + 155), SelectionIntel.Passengers(first, role, Snapshot.ViewerSlot), 12, _muted);
         if (!first.Completed)
         {
-            Text(new Vector2(x, y + 148), "UNDER CONSTRUCTION", 11, _amber);
+            Text(new Vector2(x, y + 148), first.IsRemembered ? "LAST SEEN INCOMPLETE" : "UNDER CONSTRUCTION", 11, _amber);
             if (own) Bar(new Rect2(x, y + 160, 261, 5), 1 - (float)first.BuildTicksLeft / Math.Max(1, first.BuildTicksTotal), _amber);
         }
         if (own && first.CaptureTicksTotal > 0 && first.CaptureTicksLeft > 0)
@@ -330,7 +353,7 @@ public partial class FieldHud : Control
             var color = Field.TeamColor(entity.OwnerSlot);
             float width = role.IsBuilding ? 64 : 38;
             Bar(new Rect2(screen.X - width / 2, screen.Y, width, 4), (float)entity.Hp / Math.Max(1, entity.MaxHp), color);
-            if (!entity.Completed && entity.OwnerSlot == Snapshot.ViewerSlot) Bar(new Rect2(screen.X - width / 2, screen.Y + 6, width, 3), 1 - (float)entity.BuildTicksLeft / Math.Max(1, entity.BuildTicksTotal), _amber);
+            if (!entity.Completed && SelectionIntel.OwnLive(entity, Snapshot.ViewerSlot)) Bar(new Rect2(screen.X - width / 2, screen.Y + 6, width, 3), 1 - (float)entity.BuildTicksLeft / Math.Max(1, entity.BuildTicksTotal), _amber);
             if (entity.VeterancyRank > 0) Text(screen + new Vector2(-9, -7), new string('›', entity.VeterancyRank), 18, _amber);
             if (Hovered?.Id == entity.Id) Text(screen + new Vector2(-width / 2, -9), role.Label, 12, _ink);
         }
@@ -377,7 +400,7 @@ public partial class FieldHud : Control
         Text(rect.Position + new Vector2(30, 46), "FIELD GUIDE", 28, _ink);
         Text(rect.Position + new Vector2(30, 74), "Build a base, secure supplies, destroy every enemy building.", 15, _muted);
         string[] left = { "SELECT & NAVIGATE", "LMB / drag     Select / box-select your units", "Shift + LMB     Add or remove from selection", "Ctrl + 1–9     Assign a control group", "1–9 / double-tap     Recall / focus group", "WASD / arrows     Pan camera", "Middle drag / wheel     Pan / zoom", "Space     Focus selection", "Tab     Find and select a Dozer", "H / Esc     Help / cancel mode or pause" };
-        string[] right = { "ISSUE ORDERS", "RMB / Z     Contextual order / attack target", "Q / X / G     Attack-move / stop / guard", "T / F     Append waypoint / force attack", "R / E / C     Repair / enter / capture", "V / Y / Del     Exit / rally / sell", "Shift + order     Append to unit order queue", "Build card → hold-drag     Face, then release to place", "Producer card     Train a unit or research", "Queue number ×     Cancel and refund that item", "F3     Diagnostics overlay (box, stuck, AI)" };
+        string[] right = { "ISSUE ORDERS", "RMB / Z     Contextual order / attack target", "Q / X / G     Attack-move / stop / guard", "T / F     Append waypoint / force attack", "R / E / C     Repair / enter / capture", "V / Y / Del     Exit / rally / sell", "Shift + order     Append to unit order queue", "Build card → hold-drag     Face, then release to place", "Producer card     Train a unit or research", "Queue number ×     Cancel and refund that item", "F3     Diagnostics overlay (tick, selection ids)" };
         for (int i = 0; i < left.Length; i++)
         {
             Text(rect.Position + new Vector2(30, 113 + i * 28), left[i], i == 0 ? 12 : 13, i == 0 ? _accent : _ink);

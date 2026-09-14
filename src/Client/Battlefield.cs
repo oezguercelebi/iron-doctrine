@@ -16,6 +16,7 @@ public partial class Battlefield : Node3D
     private readonly Dictionary<string, PackedScene?> _models = new();
     private readonly List<(Node3D Node, WorldPoint Point)> _clutter = new();
     private readonly List<(Node3D Node, float Life)> _effects = new();
+    private readonly Dictionary<int, Node3D> _rallyFlags = new();
     private MultiMesh _ground = null!;
     private Color[] _groundColors = Array.Empty<Color>();
     private Visibility[] _lastVisibility = Array.Empty<Visibility>();
@@ -163,10 +164,13 @@ public partial class Battlefield : Node3D
             float radius = Math.Max(role.IsInfantry ? 13 : 18, role.Radius / Units * GetViewport().GetVisibleRect().Size.Y / Zoom);
             var center = ScreenPosition(entity, role.IsBuilding ? 1 : .5f);
             float distance = center.DistanceTo(screen);
-            if (distance < radius + 7 && distance / radius < bestScore)
+            if (distance >= radius + 7) continue;
+            // Buildings occupy a large disk; scale them so overlapping infantry/mobile win unless the click is clearly on the building.
+            float score = distance / radius * (role.IsBuilding ? 3.5f : 1f);
+            if (score < bestScore)
             {
                 best = entity;
-                bestScore = distance / radius;
+                bestScore = score;
             }
         }
         return best;
@@ -279,6 +283,48 @@ public partial class Battlefield : Node3D
             if (missile.Position != Vector3.Zero) Tracer(missile.Position, newPosition, new Color("f2a860"));
             missile.Position = newPosition;
         }
+        UpdateRallyFlags(snapshot, selection);
+    }
+
+    private void UpdateRallyFlags(MatchSnapshot snapshot, HashSet<int> selection)
+    {
+        var keep = new HashSet<int>();
+        foreach (var entity in snapshot.Entities)
+        {
+            if (!selection.Contains(entity.Id) || entity.OwnerSlot != snapshot.ViewerSlot || !entity.Completed) continue;
+            if (!_config.Roles.Any(r => r.ProducerId == entity.RoleId)) continue;
+            keep.Add(entity.Id);
+            if (!_rallyFlags.TryGetValue(entity.Id, out var flag))
+            {
+                flag = RallyFlag(TeamColor(entity.OwnerSlot));
+                AddChild(flag);
+                _rallyFlags.Add(entity.Id, flag);
+            }
+            flag.Position = ToWorld(entity.RallyPoint);
+        }
+        foreach (int id in _rallyFlags.Keys.Where(id => !keep.Contains(id)).ToArray())
+        {
+            _rallyFlags[id].QueueFree();
+            _rallyFlags.Remove(id);
+        }
+    }
+
+    private static Node3D RallyFlag(Color color)
+    {
+        var root = new Node3D();
+        root.AddChild(new MeshInstance3D
+        {
+            Mesh = new CylinderMesh { TopRadius = .035f, BottomRadius = .045f, Height = 2.4f, RadialSegments = 8 },
+            MaterialOverride = Glow(new Color("e8dcc0")),
+            Position = new Vector3(0, 1.2f, 0)
+        });
+        root.AddChild(new MeshInstance3D
+        {
+            Mesh = new BoxMesh { Size = new Vector3(.8f, .4f, .04f) },
+            MaterialOverride = Glow(color),
+            Position = new Vector3(.4f, 2.05f, 0)
+        });
+        return root;
     }
 
     public Visibility VisibilityAt(WorldPoint point)

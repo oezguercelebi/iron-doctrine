@@ -49,7 +49,7 @@ internal sealed partial class Match
             case OrderKind.Move:
             case OrderKind.Waypoint:
                 body.Activity = EntityActivity.Moving;
-                if (MoveToward(body, action.Position, Role(body).Radius) != TravelResult.Moving) FinishAction(body);
+                if (MoveToward(body, action.Position, 0) != TravelResult.Moving) FinishAction(body);
                 break;
             case OrderKind.Attack:
             case OrderKind.ForceAttack: AttackAction(body, action); break;
@@ -100,7 +100,7 @@ internal sealed partial class Match
             }
             else
             {
-                if (!HasPrerequisites(builder.Owner, role) || Players[builder.Owner].Money < role.Cost || !GroundFits(action.Position, role.Radius, units: true) || Bodies.Count >= C.Rules.HardEntityCap)
+                if (!HasPrerequisites(builder.Owner, role) || Players[builder.Owner].Money < role.Cost || !BuildFits(action.Position, role.Radius) || !GroundFits(action.Position, role.Radius, units: true) || Bodies.Count >= C.Rules.HardEntityCap)
                 { if (Players[builder.Owner].Money < role.Cost) Event("vo.funds", builder.Owner, builder); FinishAction(builder); return; }
                 Players[builder.Owner].Money -= role.Cost;
                 site = Spawn(role.Id, builder.Owner, action.Position, false); site.Hp = 1; site.BuilderId = builder.Id; site.Facing = action.Facing;

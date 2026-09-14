@@ -30,12 +30,22 @@ public static class ReviewRegressionProof
         if (failures.Count != 0) throw new InvalidOperationException(string.Join("\n", failures));
     }
     private static void Need(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
-    private static Match New(bool enclosed = false, bool clutter = false)
+    private static Match New(bool clutter = false)
     {
-        var walls = enclosed ? new[] { new TerrainRect(40, 10, 8, 1, "ter.unbuildable"), new TerrainRect(40, 17, 8, 1, "ter.unbuildable"), new TerrainRect(40, 11, 1, 6, "ter.unbuildable"), new TerrainRect(47, 11, 1, 6, "ter.unbuildable") } : clutter ? config.Map.Terrain : Array.Empty<TerrainRect>();
-        var c = config with { Map = config.Map with { Objects = clutter ? config.Map.Objects : Array.Empty<MapObjectConfig>(), Terrain = walls } };
+        var terrain = clutter ? config.Map.Terrain : Array.Empty<TerrainRect>();
+        var c = config with { Map = config.Map with { Objects = clutter ? config.Map.Objects : Array.Empty<MapObjectConfig>(), Terrain = terrain } };
         var setup = c.CreateSetup() with { Fog = false, Slots = c.DefaultSlots.Select(s => s.Occupant == Occupant.AI ? s with { Occupant = Occupant.Player } : s).ToArray() };
         return (Match)new MatchFactory().Create(c, setup);
+    }
+    private static void Enclose(Match m, WorldPoint center)
+    {
+        const int n = 12;
+        const int ring = 420;
+        for (int i = 0; i < n; i++)
+        {
+            double a = i * Math.PI * 2 / n;
+            m.Spawn("map.dock", -1, new(center.X + (int)Math.Round(Math.Cos(a) * ring), center.Z + (int)Math.Round(Math.Sin(a) * ring)));
+        }
     }
     private static void Send(Match m, OrderKind kind, Match.Body actor, int target = 0, WorldPoint position = default, string product = "")
     {
@@ -59,13 +69,13 @@ public static class ReviewRegressionProof
     }
     private static void RemoteInteractions()
     {
-        var m = New(true); var dozer = m.Spawn("build.dozer", 0, new(4400, 1400)); var repair = m.Spawn("power.fusion", 0, new(6500, 1400)); repair.Hp -= config.Role("armor.basic").Damage;
+        var m = New(); var dozer = m.Spawn("build.dozer", 0, new(4400, 1400)); Enclose(m, dozer.Pos); var repair = m.Spawn("power.fusion", 0, new(6500, 1400)); repair.Hp -= config.Role("armor.basic").Damage;
         int hp = repair.Hp, money = m.Snapshot(0).Player.Money; m.Step();
         Send(m, OrderKind.Repair, dozer, repair.Id); Step(m, 100);
         Need(repair.Hp == hp && m.Snapshot(0).Player.Money == money, "A trapped dozer repaired outside interaction range.");
         Send(m, OrderKind.Build, dozer, position: new(6500, 2500), product: "prod.barracks"); Step(m, config.Role("prod.barracks").BuildTicks + 100);
         Need(!m.Bodies.Values.Any(b => b.RoleId == "prod.barracks") && m.Snapshot(0).Player.Money == money, "A blocked builder created a remote site.");
-        m = New(true); var rifle = m.Spawn("inf.rifle", 0, new(4400, 1400)); var transport = m.Spawn("eco.chinook", 0, new(6500, 1400)); transport.AutoGather = false; m.Step();
+        m = New(); var rifle = m.Spawn("inf.rifle", 0, new(4400, 1400)); Enclose(m, rifle.Pos); var transport = m.Spawn("eco.chinook", 0, new(6500, 1400)); transport.AutoGather = false; m.Step();
         Send(m, OrderKind.Enter, rifle, transport.Id); Step(m, 100); Need(rifle.ContainerId == 0 && transport.Occupants.Count == 0, "Enclosed infantry remotely entered a transport.");
         var capturable = m.Spawn("power.fusion", 1, new(6500, 2500)); m.Players[0].Upgrades.Add("up.capture");
         Send(m, OrderKind.Capture, rifle, capturable.Id); Step(m, config.Rules.CaptureTicks + 100);

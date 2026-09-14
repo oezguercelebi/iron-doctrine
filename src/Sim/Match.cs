@@ -21,6 +21,7 @@ internal sealed partial class Match : IMatch
     internal readonly SortedDictionary<int, Player> Players = new();
     private readonly List<MatchOrder> pending = new();
     private readonly List<Shot> shots = new();
+    private readonly List<CombatTrace> traces = new();
     private readonly List<MatchEvent> events = new();
     private readonly SortedDictionary<int, AiBrain> brains = new();
     private readonly Dictionary<string, RoleConfig> roles;
@@ -103,7 +104,7 @@ internal sealed partial class Match : IMatch
     public void Step()
     {
         if (paused || phase == MatchPhase.Finished) return;
-        Tick++; events.Clear();
+        Tick++; events.Clear(); traces.Clear();
         var orders = pending.ToArray(); pending.Clear();
         foreach (var order in orders) if (Validate(order) == "") Execute(order);
         UpdatePower();
@@ -119,7 +120,8 @@ internal sealed partial class Match : IMatch
         foreach (var player in Players.Values)
             if (!player.Eliminated && !Bodies.Values.Any(b => b.Owner == player.Slot && Role(b).IsBuilding)) { player.Eliminated = true; Event("vo.defeat", player.Slot); }
         var survivors = Players.Values.Where(p => !p.Eliminated).Select(p => p.Slot).ToArray();
-        if (survivors.Length == 0 || survivors.All(a => survivors.All(b => Allied(a, b))))
+        // A lone filled slot is not a victory: win is enemy buildings gone (INVARIANTS). Sandbox/solo keeps running.
+        if (survivors.Length == 0 || Players.Count > 1 && survivors.All(a => survivors.All(b => Allied(a, b))))
         {
             phase = MatchPhase.Finished; winners = survivors;
             foreach (var slot in winners) Event("vo.victory", slot);
@@ -129,7 +131,7 @@ internal sealed partial class Match : IMatch
     {
         // Public fields are explicitly included: paths, timers, orders and stale intel all affect future ticks.
         var options = new JsonSerializerOptions { IncludeFields = true };
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(new { C, S, Tick, random, nextId, nextShotId, topology, paused, phase, winners, pending, shots, events, Bodies, Players, brains }, options);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(new { C, S, Tick, random, nextId, nextShotId, topology, paused, phase, winners, pending, shots, events, traces, Bodies, Players, brains }, options);
         return Convert.ToHexString(SHA256.HashData(bytes));
     }
 
@@ -168,6 +170,7 @@ internal sealed partial class Match : IMatch
     {
         public int Id, Owner, Source, Target, Damage, Speed;
         public string DamageId = "";
+        public string DeliveryId = "del.missile";
         public WorldPoint Pos, TargetPos;
     }
 }

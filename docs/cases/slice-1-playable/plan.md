@@ -15,7 +15,7 @@
 - [ ] sim-r2 · idle-user · lane src/Sim/**, tests/** · after sim-r1 · Sanitize point orders, queue unload correctly, clear control on capture.
 
 - [ ] final-findings · cancelled · superseded by feel-sim / feel-hud / feel-input
-- [ ] feel-sim · open · lane src/Sim/**, tests/** · after — · Clamp unload FindFree to local reach; CanPlace matches GroundFits(units); regressions. Do not touch tests/SeamConformance.cs.
-- [ ] feel-hud · open · lane src/Client/Battlefield.cs, src/Client/FieldHud.cs, src/Client/FieldAudio.cs · after — · Persistent rally flag on re-select; Rally only on producers; pick infantry over buildings; command bar uses owned selection; sfx.rally/sfx.place tones.
-- [ ] feel-input · open · lane src/Client/MatchClient.cs, src/Client/CommandIntent.cs, src/Client/Proof/**, src/Client/README.md · after — · Guard keeps unit TargetId; sell mode; edge pan; box-select radius; play sfx.rally/sfx.place; upgrade toast. Do not add new Battlefield APIs.
+- [x] feel-sim · done · lane src/Sim/**, tests/** · after — · Clamp unload FindFree to local reach; CanPlace matches GroundFits(units); regressions. R approve.
+- [x] feel-hud · done · lane src/Client/Battlefield.cs, src/Client/FieldHud.cs, src/Client/FieldAudio.cs · after — · Persistent rally flag on re-select; Rally only on producers; pick infantry over buildings; command bar uses owned selection; sfx.rally/sfx.place tones. R approve.
+- [x] feel-input · done · lane src/Client/MatchClient.cs, src/Client/CommandIntent.cs, src/Client/Proof/**, src/Client/README.md · after — · Guard keeps unit TargetId; sell mode; edge pan; box-select radius; play sfx.rally/sfx.place; upgrade toast. R approve after sell-incomplete patch b7a5417.
 - [ ] feel-integration · open · lane hubs on main · after feel-sim, feel-hud, feel-input · Proofs on main, Godot build, independent R.

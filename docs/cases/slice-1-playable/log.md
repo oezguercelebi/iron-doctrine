@@ -108,3 +108,33 @@ Lanes (disjoint files, no new shared API):
 - feel-hud → Battlefield.cs, FieldHud.cs, FieldAudio.cs
 - feel-input → MatchClient.cs, CommandIntent.cs, src/Client/Proof/**, Client README
 Spawn all three worktrees after this commit. Proof: bash tools/proof.sh ; bash src/Client/Proof/run.sh. R after each merge.
+
+## 2026-09-14 lead
+Spawned feel-sim, feel-hud, feel-input together on f923e3f, isolation worktree. Max three. I will merge one at a time and spawn R.
+
+## 2026-09-14 lead · feel-input merge
+Lane check f923e3f...2e1d198: CommandIntent.cs, MatchClient.cs, Proof/ClientInputProof.cs, README.md only. Fast-forward merge 2e1d198. Main `bash src/Client/Proof/run.sh` PASS (Guard retains TargetId). Spawned independent R on that range.
+
+## 2026-09-14 lead · feel-hud merge
+Lane check: Battlefield.cs, FieldHud.cs, FieldAudio.cs only. Merged edf4904 onto main (9184680). Client proof still PASS. Spawned independent R. feel-sim still building.
+
+## 2026-09-14 lead · feel-sim merge
+Lane check: Pathing.cs, Systems.cs, Orders.cs, ReviewRegressionProof.cs. Merged 6a36604 (b9d83e7). `bash tools/proof.sh` all PASS including unload local and ghost occupancy. Spawned independent R. All three implement lanes merged; waiting R.
+
+## 2026-09-14 r · feel-hud
+approve. No findings.
+
+## 2026-09-14 r · feel-sim
+approve. No findings ≥80.
+
+## 2026-09-14 r · feel-input
+block. MatchClient.cs:316 P2 — sell click on unselected incomplete building required Completed; sim sells unfinished sites. in-lane.
+
+## 2026-09-14 lead · feel-input patch1
+Removed Completed gate. b7a5417. Client proof still PASS. Fresh R spawned.
+
+## 2026-09-14 r · feel-input patch1
+approve. Completed gate gone; sell still cursor then click.
+
+## 2026-09-14 lead
+All three feel lanes R-approved. Sim proof and client proof green on main. User can play: select producer, Y/RMB set rally, deselect, reselect — flag at RallyPoint.

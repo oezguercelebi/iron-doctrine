@@ -93,3 +93,9 @@ APPROVE. 12e26d5. Engineering gates hold for ready-to-close. User visual/play + 
 
 ## 2026-09-15T00:36Z lead
 Wrote `surprise.md`. Status `ready-to-close`. User closes. No push.
+
+## 2026-09-15T user
+Close the case. push
+
+## 2026-09-15T lead
+User close. Provisional Q1–Q10 accepted (not overruled). Visual/play accepted by close. Status `closed`. Push authorized. Lock cleared.

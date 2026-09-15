@@ -1,10 +1,10 @@
-status: ready-to-close
-lanes: all done · final R APPROVE 12e26d5
+status: closed
+lanes: all done
 parent: —
 blocked: —
 blocked-since: —
-provisional: Q1–Q10 as spec (see surprise.md)
-next: user visual/play accept and close. No push.
+provisional: Q1–Q10 accepted at close
+next: —
 tested-revision: b649bd0 (`bash tools/verify.sh` exit 0) · frames on 12e26d5
 reviewed-revision: 12e26d5 (final R APPROVE)
-acceptance-summary: engineering gates hold. User visual/play and close remain. Render group in verify.sh is pending (frames captured, not golden).
+acceptance-summary: user closed 2026-09-15; engineering gates held; visual/play accepted by close. Render group in verify.sh remains pending (frames captured, not golden).

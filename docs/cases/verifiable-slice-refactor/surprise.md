@@ -14,9 +14,9 @@ The slice already had a green full match. The job was evidence: atomics, real GU
 - `review_case.py` process exit was not a verdict. Self-check now fails closed. Codex-specific write stripping remains; this case used Grok `code-reviewer` with no write tools.
 - Architect wanted a MatchClient/Battlefield split. Lead kept one client SCC. That was faster and matched the import graph.
 
-## Defaults taken (user may overrule at close)
+## Defaults taken (accepted at close)
 
-Q1–Q10 as spec. TerrainAt OOB is `ter.block`. Ghost occupancy still blocks visible units.
+Q1–Q10 as spec. TerrainAt OOB is `ter.block`. Ghost occupancy still blocks visible units. User did not overrule.
 
 ## Spec defects
 

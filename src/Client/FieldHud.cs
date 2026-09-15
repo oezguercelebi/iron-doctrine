@@ -301,7 +301,7 @@ public partial class FieldHud : Control
             actions.Add(("STOP  X", "stop", "Stop the current order and clear its queue"));
             actions.Add(("GUARD  G", "guard", "Guard a unit or a point"));
             actions.Add(("WAYPOINT  T", "waypoint", "Append a movement waypoint"));
-            if (selected.All(e => Config.Role(e.RoleId).Damage > 0)) actions.Add(("FORCE FIRE  F", "force", "Attack ground or any target; can harm allies"));
+            if (selected.All(e => Config.Role(e.RoleId).Damage > 0)) actions.Add(("FORCE ATTACK  F", "force", "Attack ground or any target; can harm allies"));
         }
         if (buildings && complete && selected.All(e => Config.Roles.Any(r => r.ProducerId == e.RoleId))) actions.Add(("RALLY  Y", "rally", "Set where produced units move"));
         if (selected.All(e => Config.Role(e.RoleId).AbilityIds.Contains("ab.sell"))) actions.Add(("SELL  Del", "sell", $"Sell selected buildings; refund {Config.Rules.SellRefundPercent}%"));

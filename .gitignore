@@ -17,7 +17,12 @@ target/
 **/bin/
 **/obj/
 
-.tools
 artifacts/
 
 __pycache__/
+
+# Private local agent/crew state (not part of the public project)
+.crew/
+.claude/
+.grok/
+.codex/

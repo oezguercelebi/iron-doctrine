@@ -464,7 +464,7 @@ public partial class MatchClient : Node3D
         if (action == "stop") { Submit(OrderKind.Stop, actors); ClearMode(); return; }
         _mode = action switch { "move" => OrderKind.Move, "attack" => OrderKind.Attack, "attackmove" => OrderKind.AttackMove, "guard" => OrderKind.Guard, "waypoint" => OrderKind.Waypoint, "force" => OrderKind.ForceAttack, "repair" => OrderKind.Repair, "gather" => OrderKind.Gather, "enter" => OrderKind.Enter, "capture" => OrderKind.Capture, "exit" => OrderKind.Exit, "rally" => OrderKind.Rally, "build" => OrderKind.Build, "sell" => OrderKind.Sell, _ => null };
         _buildRole = action == "build" ? product : "";
-        _hud.ModeText = action == "build" ? "PLACE  /  " + _match.Config.Role(product).Label.ToUpperInvariant() + "  ·  HOLD-DRAG FACE" : _mode switch { OrderKind.AttackMove => "ATTACK-MOVE", OrderKind.ForceAttack => "FORCE FIRE — ALLIES CAN BE HIT", OrderKind.Waypoint => "APPEND WAYPOINT", OrderKind.Sell => "SELL — click your building", OrderKind.Guard => "GUARD — UNIT OR POINT", _ => _mode?.ToString().ToUpperInvariant() ?? "" };
+        _hud.ModeText = action == "build" ? "PLACE  /  " + _match.Config.Role(product).Label.ToUpperInvariant() + "  ·  HOLD-DRAG FACE" : _mode switch { OrderKind.AttackMove => "ATTACK-MOVE", OrderKind.ForceAttack => "FORCE ATTACK — ALLIES CAN BE HIT", OrderKind.Waypoint => "APPEND WAYPOINT", OrderKind.Sell => "SELL — click your building", OrderKind.Guard => "GUARD — UNIT OR POINT", _ => _mode?.ToString().ToUpperInvariant() ?? "" };
         _hud.PlacementText = "";
     }
 

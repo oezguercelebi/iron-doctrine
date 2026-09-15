@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Crew read-only review harness. Process exit 0 is not APPROVE; parse the verdict."""
+"""Restricted read-only review harness. Process exit 0 is not APPROVE; parse the verdict."""
 from __future__ import annotations
 
 import argparse
@@ -22,7 +22,7 @@ DEFAULT_CONTEXT = (
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Restricted Crew R harness. --case is required for a real review; it does not default to slice-1-playable."
+        description="Restricted read-only review harness. --case is required for a real review; it does not default to slice-1-playable."
     )
     parser.add_argument("name", nargs="?")
     parser.add_argument("base", nargs="?")
@@ -133,7 +133,7 @@ def build_prompt(
         ["git", "diff", "--no-ext-diff", "--no-color", base, head], cwd=root, text=True
     )
     parts = [
-        f"You are Crew R, independent read-only reviewer for {case_id}. You authored none of this code. "
+        f"You are an independent read-only reviewer for {case_id}. You authored none of this code. "
         f"Review the range {base}..{head}; authorized lane: {lane}. Do not spawn another agent. "
         "You have no write or shell tools by harness. The lead supplies raw source and proof outputs below. "
         "Do not accept author narratives. Review correctness and accepted requirements, report actionable blockers "
@@ -264,7 +264,7 @@ def main(argv: list[str] | None = None) -> int:
     proofs, proof_errors = collect_proofs(root, args.proof)
     identity = identity_payload(args.case, args.base, args.head, args.lane, proofs)
     print(
-        f"Crew R {args.name}: case={args.case} {args.base}..{args.head} proofs={len(proofs)}",
+        f"Review {args.name}: case={args.case} {args.base}..{args.head} proofs={len(proofs)}",
         flush=True,
     )
     for rec in proofs:
@@ -313,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     for feature in ["shell_tool", "multi_agent", "multi_agent_v2", "js_repl", "apps", "plugins", "image_generation", "goals"]:
         command += ["-c", f"features.{feature}=false"]
     command.append("-")
-    print(f"Crew R {args.name}: {len(paths)} source paths, no write tools", flush=True)
+    print(f"Review {args.name}: {len(paths)} source paths, no write tools", flush=True)
     try:
         completed = subprocess.run(
             command, input=prompt, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600
@@ -328,7 +328,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         return review_exit([], verdict, completed.returncode)
     except subprocess.TimeoutExpired:
-        print("REVIEW_TIMEOUT: 10 minute cap reached; spawn one fresh R per Crew.")
+        print("REVIEW_TIMEOUT: 10 minute cap reached; spawn one fresh reviewer.")
         return review_exit([], "MISSING", 0, timed_out=True)
 
 

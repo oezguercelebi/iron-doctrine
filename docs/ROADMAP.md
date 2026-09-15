@@ -1,6 +1,6 @@
 # Roadmap
 
-Phases 0–3 are complete. First playable is a local 1vAI match. Later phases are not scheduled.
+Phases 0–3b are complete. First playable is a local 1vAI match with executable verification. Later phases are not scheduled.
 
 ## 0. This repo (done)
 
@@ -31,6 +31,10 @@ Godot **4.8 .NET**, top-down 3D. Sim is a tick + orders, not `Node`. View is glT
 ## 3. First playable — 1 vs computer (done)
 
 One human, one AI, one 2-slot map, vanilla Aegis. Win by destroying enemy buildings. Closed case: [slice-1-playable](cases/slice-1-playable/status.md).
+
+## 3b. Verifiable slice (done)
+
+Atomic contracts, fail-closed `tools/verify.sh`, sealed replay, real client input, combat traces, runtime locomotion. Closed case: [verifiable-slice-refactor](cases/verifiable-slice-refactor/status.md).
 
 ## 4. Multiplayer (the goal)
 

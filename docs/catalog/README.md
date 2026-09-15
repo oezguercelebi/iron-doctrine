@@ -1,6 +1,6 @@
 # Catalog
 
-Role sheets for the whole game. Still no app. Still no numbers. Still no frozen product names.
+Role sheets for the whole game. No balance numbers. No frozen product names. The slice-1 Godot client already exists; this catalog is still the spec, not a second game.
 
 Agent entry: [SLICE.md](SLICE.md) → [SCHEMA.md](SCHEMA.md) → [INVARIANTS.md](INVARIANTS.md) → the sheet you are building. Root: [AGENTS.md](../../AGENTS.md).
 
